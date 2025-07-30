@@ -11,6 +11,7 @@ interface GameIntegrationState {
   wallet: string | null;
 }
 
+
 interface GameIntegrationContextType extends GameIntegrationState {
   connectGame: () => Promise<void>;
   disconnectGame: () => void;
