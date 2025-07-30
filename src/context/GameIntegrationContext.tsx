@@ -58,7 +58,7 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
     setState(prev => ({ ...prev, syncCode: code, wallet, gameStatus: 'connecting' }));
 
     try {
-      await fetch('/api/init-sync', {
+      await fetch('https://racevault.onrender.com/api/init-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, wallet })
@@ -106,7 +106,7 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
       }
     };
 
-    poll();
+    // poll();
   };
 
   const syncAssets = async (wallet: string) => {
