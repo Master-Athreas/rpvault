@@ -2,7 +2,7 @@ import { Redis } from '@upstash/redis'
 import { ethers } from 'ethers'
 
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL!)
-const ERC20_ADDRESS = process.env.ERC20_TOKEN_ADDRESS!
+const ERC20_ADDRESS = '0x9F40f8952023b7aa6d06E0d402a1005d89BB056A'
 const NFT_ADDRESS = '0xDc2768F656d518F0CdfB27f06D7613C9772B847f'
 
 const ERC20_ABI = [
