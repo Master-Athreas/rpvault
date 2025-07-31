@@ -11,7 +11,6 @@ interface GameIntegrationState {
   wallet: string | null;
 }
 
-
 interface GameIntegrationContextType extends GameIntegrationState {
   connectGame: () => Promise<void>;
   disconnectGame: () => void;
@@ -58,8 +57,10 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
 
     setState(prev => ({ ...prev, syncCode: code, wallet, gameStatus: 'connecting' }));
 
+    const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+
     try {
-      await fetch('https://racevault.onrender.com/api/init-sync', {
+      await fetch(`${apiUrl}/api/init-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, wallet })
@@ -68,52 +69,42 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
       console.error(err);
     }
 
-    const playerId = `RaceVault_${wallet.slice(-8).toUpperCase()}`;
     const start = Date.now();
 
     const poll = async () => {
+      if (Date.now() - start > 5 * 60 * 1000) {
+        setState(prev => ({ ...prev, syncCode: null, gameStatus: 'disconnected' }));
+        return;
+      }
+
       try {
-        const res = await fetch('/api/verify-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, playerId })
-        });
-
-        if (res.status === 410) {
-          setState(prev => ({ ...prev, syncCode: null, gameStatus: 'connected' }));
-          return;
-        }
-
+        const res = await fetch(`${apiUrl}/api/sync-status/${code}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.success) {
+          if (data.status === 'completed') {
             setState(prev => ({
               ...prev,
               syncCode: null,
               gameStatus: 'connected',
-              inGameId: playerId
+              inGameId: data.playerId
             }));
-            return;
+            return; // Stop polling
           }
         }
       } catch (err) {
-        console.error(err);
+        console.error("Polling error:", err);
       }
 
-      if (Date.now() - start < 5 * 60 * 1000) {
-        setTimeout(poll, 3000);
-      } else {
-        setState(prev => ({ ...prev, syncCode: null, gameStatus: 'connected' }));
-      }
+      setTimeout(poll, 3000); // Continue polling
     };
 
-    // poll();
+    poll();
   };
 
   const syncAssets = async (wallet: string) => {
     setState(prev => ({ ...prev, gameStatus: 'syncing' }));
     try {
-      await fetch('/api/sync-assets');
+      // await fetch('/api/sync-assets');
       setState(prev => ({ ...prev, gameStatus: 'connected', wallet }));
     } catch (err) {
       console.error(err);
