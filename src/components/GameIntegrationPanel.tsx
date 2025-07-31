@@ -15,9 +15,10 @@ import {
 
 interface GameIntegrationPanelProps {
   user: any;
+  tokenBalance: number; // ✅ Add this
 }
 
-const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => {
+const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, tokenBalance }) => {
   const {
     isGameConnected,
     gameStatus,
@@ -32,7 +33,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => 
 
   const handlePairing = async () => {
     if (!user) return;
-    await requestPairing(user.address);
+    await requestPairing(user.address, tokenBalance); // ✅ Use correct token balance
   };
 
   const handleGameConnection = async () => {
@@ -53,7 +54,8 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => 
   const getStatusColor = () => {
     switch (gameStatus) {
       case 'connected': return 'text-green-400';
-      case 'connecting': case 'syncing': return 'text-yellow-400';
+      case 'connecting':
+      case 'syncing': return 'text-yellow-400';
       case 'disconnected': return 'text-red-400';
     }
   };
@@ -61,7 +63,8 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => 
   const getStatusIcon = () => {
     switch (gameStatus) {
       case 'connected': return <CheckCircle className="h-5 w-5" />;
-      case 'connecting': case 'syncing': return <RefreshCw className="h-5 w-5 animate-spin" />;
+      case 'connecting':
+      case 'syncing': return <RefreshCw className="h-5 w-5 animate-spin" />;
       case 'disconnected': return <AlertCircle className="h-5 w-5" />;
     }
   };
@@ -128,7 +131,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => 
           >
             {isGameConnected ? 'Disconnect' : 'Connect Game'}
           </button>
-          
+
           {isGameConnected && (
             <>
               <button
@@ -224,5 +227,5 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => 
     </div>
   );
 };
-export default GameIntegrationPanel;
 
+export default GameIntegrationPanel;

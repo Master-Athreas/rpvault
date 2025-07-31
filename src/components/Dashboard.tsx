@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGameIntegration } from '../context/GameIntegrationContext';
 import { Wallet, TrendingUp, Award, Clock, Car, Zap, Home, Coins } from 'lucide-react';
@@ -14,7 +13,6 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user }) => {
-  // ✅ ALL HOOKS MUST BE HERE (before any return)
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions'>('portfolio');
   const [showGamePanel, setShowGamePanel] = useState(false);
   const { inGameId } = useGameIntegration();
@@ -40,7 +38,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     alert(`Live transaction accepted: ${transaction.asset.name}`);
   };
 
-  // ✅ after all hooks
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -62,13 +59,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
           <p className="text-gray-400">Welcome back, {inGameId || user.username}</p>
         </div>
 
-        {/* Game Integration Toggle */}
         <div className="mb-6">
           <button
             onClick={() => setShowGamePanel(!showGamePanel)}
@@ -78,14 +73,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </button>
         </div>
 
-        {/* Game Integration Panel */}
+        {/* ✅ Pass tokenBalance into the panel */}
         {showGamePanel && (
           <div className="mb-8">
-            <GameIntegrationPanel user={user} />
+            <GameIntegrationPanel user={user} tokenBalance={tokenBalance} />
           </div>
         )}
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
@@ -106,8 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <p className="text-gray-400 text-sm">Token Balance</p>
                 <p className="text-2xl font-bold text-purple-400">
                   {tokenBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                 </p>
-
+                </p>
               </div>
               <Coins className="h-8 w-8 text-purple-400" />
             </div>
@@ -132,11 +125,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               <Award className="h-8 w-8 text-purple-400" />
             </div>
           </div>
-
-          
         </div>
 
-        {/* Tabs */}
+        {/* Portfolio / Transactions */}
         <div className="flex space-x-1 mb-8">
           <button
             onClick={() => setActiveTab('portfolio')}
@@ -160,7 +151,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </button>
         </div>
 
-        {/* Tab Content */}
         {activeTab === 'portfolio' && (
           <div>
             {/* Category Breakdown */}
@@ -246,7 +236,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         )}
       </div>
 
-      {/* Live Transaction Feed */}
       <LiveTransactionFeed 
         user={user} 
         onTransactionAccept={handleLiveTransactionAccept}

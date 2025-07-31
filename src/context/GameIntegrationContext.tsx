@@ -14,7 +14,7 @@ interface GameIntegrationState {
 interface GameIntegrationContextType extends GameIntegrationState {
   connectGame: () => Promise<void>;
   disconnectGame: () => void;
-  requestPairing: (wallet: string) => Promise<void>;
+  requestPairing: (wallet: string, balance: number) => Promise<void>; // ✅ updated
   syncAssets: (wallet: string) => Promise<void>;
   setGameStatus: (s: GameStatus) => void;
 }
@@ -49,7 +49,8 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
     setState({ ...defaultState, gameStatus: 'disconnected' });
   };
 
-  const requestPairing = async (wallet: string) => {
+  // ✅ updated: now takes balance too
+  const requestPairing = async (wallet: string, balance: number) => {
     const code = Math.random().toString(36).substr(2, 6).toUpperCase();
     const message = `/sync ${code}`;
     const sig = await signMessage(wallet, message);
@@ -63,7 +64,7 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
       await fetch(`${apiUrl}/api/init-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, wallet })
+        body: JSON.stringify({ code, wallet, balance }) // ✅ pass token balance to backend
       });
     } catch (err) {
       console.error(err);
@@ -88,14 +89,14 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
               gameStatus: 'connected',
               inGameId: data.playerId
             }));
-            return; // Stop polling
+            return;
           }
         }
       } catch (err) {
         console.error("Polling error:", err);
       }
 
-      setTimeout(poll, 3000); // Continue polling
+      setTimeout(poll, 3000);
     };
 
     poll();
@@ -104,7 +105,6 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
   const syncAssets = async (wallet: string) => {
     setState(prev => ({ ...prev, gameStatus: 'syncing' }));
     try {
-      // await fetch('/api/sync-assets');
       setState(prev => ({ ...prev, gameStatus: 'connected', wallet }));
     } catch (err) {
       console.error(err);
@@ -117,7 +117,14 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
   };
 
   return (
-    <GameIntegrationContext.Provider value={{ ...state, connectGame, disconnectGame, requestPairing, syncAssets, setGameStatus }}>
+    <GameIntegrationContext.Provider value={{
+      ...state,
+      connectGame,
+      disconnectGame,
+      requestPairing,
+      syncAssets,
+      setGameStatus
+    }}>
       {children}
     </GameIntegrationContext.Provider>
   );
