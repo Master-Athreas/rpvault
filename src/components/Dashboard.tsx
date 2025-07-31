@@ -18,6 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions'>('portfolio');
   const [showGamePanel, setShowGamePanel] = useState(false);
   const { inGameId } = useGameIntegration();
+
   const [tokenBalance, setTokenBalance] = useState(0);
 
   useEffect(() => {
