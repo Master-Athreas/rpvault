@@ -30,7 +30,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
       <div className="flex items-center space-x-4">
         <div className="text-right">
           <div className="text-sm text-gray-300">{formatAddress(user.address)}</div>
-          <div className="text-xs text-blue-400">{user.balance} ETH</div>
+          <div className="text-xs text-blue-400">
+            {Number(user.balance).toLocaleString(undefined, {
+              minimumFractionDigits: 5,
+              maximumFractionDigits: 5,
+            })} ETH
+          </div>
+
         </div>
         <button
           onClick={handleDisconnect}

@@ -91,7 +91,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Wallet Balance</p>
-                <p className="text-2xl font-bold text-blue-400">{formatPrice(user.balance)}</p>
+                <p className="text-2xl font-bold text-blue-400">{Number(user.balance).toLocaleString(undefined, {
+                    minimumFractionDigits: 5,
+                    maximumFractionDigits: 5,
+                  })} ETH</p>
               </div>
               <Wallet className="h-8 w-8 text-blue-400" />
             </div>
