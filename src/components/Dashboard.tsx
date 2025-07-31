@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useGameIntegration } from '../context/GameIntegrationContext';
 import { Wallet, TrendingUp, Award, Clock, Car, Zap, Home } from 'lucide-react';
 import CarCard from './CarCard';
 import LiveTransactionFeed from './LiveTransactionFeed';
@@ -16,6 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   // ✅ ALL HOOKS MUST BE HERE (before any return)
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions'>('portfolio');
   const [showGamePanel, setShowGamePanel] = useState(false);
+  const { inGameId } = useGameIntegration();
 
   const handleLiveTransactionAccept = (transaction: LiveGameTransaction) => {
     if (!user) return;
@@ -47,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400">Welcome back, {user.username}</p>
+          <p className="text-gray-400">Welcome back, {inGameId || user.username}</p>
         </div>
 
         {/* Game Integration Toggle */}
