@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis'
+import tokenBalance from './Dashboard.tsx';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
