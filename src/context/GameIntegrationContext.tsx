@@ -58,7 +58,7 @@ export const GameIntegrationProvider = ({ children }: { children: ReactNode }) =
 
     setState(prev => ({ ...prev, syncCode: code, wallet, gameStatus: 'connecting' }));
 
-    const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+    const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racebackend.onrender.com";
 
     try {
       await fetch(`${apiUrl}/api/init-sync`, {
