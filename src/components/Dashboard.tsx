@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameIntegration } from '../context/GameIntegrationContext';
-import { Wallet, TrendingUp, Award, Clock, Car, Zap, Home } from 'lucide-react';
+import { Wallet, TrendingUp, Award, Clock, Car, Zap, Home, Coins } from 'lucide-react';
 import CarCard from './CarCard';
 import LiveTransactionFeed from './LiveTransactionFeed';
 import { mockTransactions } from '../data/mockData';
 import { LiveGameTransaction } from '../types';
-import { formatPrice, formatAddress } from '../utils/web3';
+import { formatPrice, getERC20Balance } from '../utils/web3';
 import GameIntegrationPanel from './GameIntegrationPanel';
 
 interface DashboardProps {
@@ -18,6 +18,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions'>('portfolio');
   const [showGamePanel, setShowGamePanel] = useState(false);
   const { inGameId } = useGameIntegration();
+  const [tokenBalance, setTokenBalance] = useState(0);
+
+  useEffect(() => {
+    const fetchTokenBalance = async () => {
+      const balance = await getERC20Balance(
+        '0x9F40f8952023b7aa6d06E0d402a1005d89BB056A',
+        user.address
+      );
+      setTokenBalance(balance);
+    };
+
+    if (user?.address) {
+      fetchTokenBalance();
+    }
+  }, [user?.address]);
 
   const handleLiveTransactionAccept = (transaction: LiveGameTransaction) => {
     if (!user) return;
@@ -104,10 +119,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Account</p>
-                <p className="text-sm font-mono text-white">{formatAddress(user.address)}</p>
+                <p className="text-gray-400 text-sm">Token Balance</p>
+                <p className="text-2xl font-bold text-purple-400">{tokenBalance.toFixed(2)}</p>
               </div>
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+              <Coins className="h-8 w-8 text-purple-400" />
             </div>
           </div>
         </div>
