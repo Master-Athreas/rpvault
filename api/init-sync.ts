@@ -12,11 +12,7 @@ export default async function handler(req, res) {
   const { code, wallet } = req.body
   if (!code || !wallet) return res.status(400).json({ success: false })
 
-  await redis.setex(code, 300, JSON.stringify({
-    wallet,
-    balance: tokenBalance,
-    vehicles: ['SupraNFT', 'RX7NFT']
-  }))
+  await redis.setex(code, 300, JSON.stringify({ wallet }))
 
   return res.json({ success: true })
 }
