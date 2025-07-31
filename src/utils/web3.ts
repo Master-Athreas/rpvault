@@ -31,6 +31,33 @@ export const getBalance = async (address: string): Promise<number> => {
   return 0;
 };
 
+export const getERC20Balance = async (
+  token: string,
+  wallet: string
+): Promise<number> => {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const data =
+        '0x70a08231' + wallet.replace(/^0x/, '').padStart(64, '0');
+      const balanceHex = await window.ethereum.request({
+        method: 'eth_call',
+        params: [
+          {
+            to: token,
+            data
+          },
+          'latest'
+        ]
+      });
+      return parseInt(balanceHex, 16) / 1e18;
+    } catch (error) {
+      console.error('Failed to fetch token balance:', error);
+      return 0;
+    }
+  }
+  return 0;
+};
+
 export const signMessage = async (
   address: string,
   message: string
