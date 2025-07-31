@@ -100,6 +100,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
+                <p className="text-gray-400 text-sm">Token Balance</p>
+                <p className="text-2xl font-bold text-purple-400">
+                  {tokenBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                 </p>
+
+              </div>
+              <Coins className="h-8 w-8 text-purple-400" />
+            </div>
+          </div>
+
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-gray-400 text-sm">Portfolio Value</p>
                 <p className="text-2xl font-bold text-green-400">{formatPrice(portfolioValue)}</p>
               </div>
@@ -117,15 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             </div>
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Token Balance</p>
-                <p className="text-2xl font-bold text-purple-400">{tokenBalance.toFixed(2)}</p>
-              </div>
-              <Coins className="h-8 w-8 text-purple-400" />
-            </div>
-          </div>
+          
         </div>
 
         {/* Tabs */}
