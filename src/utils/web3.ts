@@ -120,8 +120,23 @@ export const sendToken = async (to: string, amount: number): Promise<string | nu
     return null;
 };
 
+export const disconnectWallet = async (): Promise<void> => {
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_revokePermissions',
+        params: [{ eth_accounts: {} }],
+      });
+      console.log('Wallet disconnected');
+    } catch (error) {
+      console.error('Failed to disconnect wallet:', error);
+    }
+  }
+};
+
 declare global {
   interface Window {
     ethereum?: any;
   }
 }
+

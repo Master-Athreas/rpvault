@@ -7,6 +7,7 @@ import {
   getTokenBalance,
   getTokenSymbol,
   formatNumber,
+  disconnectWallet,
 } from "../utils/web3";
 
 interface WalletConnectProps {
@@ -44,7 +45,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
     }
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    await disconnectWallet();
     setUser(null);
   };
 
