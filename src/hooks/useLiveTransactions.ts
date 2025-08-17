@@ -81,7 +81,7 @@ export const useLiveTransactions = () => {
         }
 
         // Only process if inGameId exists and the player is not the one who spawned the car
-        if (inGameId && data.playerId == inGameId) {
+        if (inGameId && data.playerName == inGameId) {
           // The server sends a full vehicle data object
           const newTransaction: LiveGameTransaction = {
             id: `live_${Date.now()}`,

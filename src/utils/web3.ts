@@ -139,4 +139,3 @@ declare global {
     ethereum?: any;
   }
 }
-

@@ -45,8 +45,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
     }
   };
 
-  const handleDisconnect = async () => {
-    await disconnectWallet();
+  const handleDisconnect = () => {
+    disconnectWallet();
     setUser(null);
   };
 
