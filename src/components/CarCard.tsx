@@ -49,6 +49,12 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
       {/* Content */}
       <div className="p-4">
         <h3 className="text-lg font-bold text-white mb-2">{car.name}</h3>
+        {car.vehicleCode && (
+          <div className="mb-2">
+            <p className="text-xs text-gray-400">VEHICLE CODE</p>
+            <p className="text-sm font-mono text-cyan-400 bg-gray-900 px-2 py-1 rounded">{car.vehicleCode}</p>
+          </div>
+        )}
         <p className="text-gray-400 text-sm mb-3 line-clamp-2">{car.description}</p>
         
         {/* Specs for cars and modifications */}
@@ -70,7 +76,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
         {/* Price and Actions */}
         <div className="flex items-center justify-between">
           <div className="text-lg font-bold text-blue-400">
-            {formatPrice(car.price)}
+            {formatPrice(car.price, 'UNT')}
           </div>
           <div className="flex space-x-2">
             <button

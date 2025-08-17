@@ -11,7 +11,7 @@ const getTokenContract = () => {
     return null;
 };
 
-export const connectWallet = async (): Promise<string | null> => {
+export const connectWallet = async () => {
   if (typeof window.ethereum !== 'undefined') {
     try {
       const accounts = await window.ethereum.request({
@@ -28,7 +28,7 @@ export const connectWallet = async (): Promise<string | null> => {
   }
 };
 
-export const getBalance = async (address: string): Promise<number> => {
+export const getBalance = async (address) => {
   if (typeof window.ethereum !== 'undefined') {
     try {
       const balanceHex = await window.ethereum.request({
@@ -44,7 +44,7 @@ export const getBalance = async (address: string): Promise<number> => {
   return 0;
 };
 
-export const getTokenBalance = async (address: string): Promise<number> => {
+export const getTokenBalance = async (address) => {
     const contract = getTokenContract();
     if (contract) {
         try {
@@ -58,7 +58,7 @@ export const getTokenBalance = async (address: string): Promise<number> => {
     return 0;
 };
 
-export const getTokenSymbol = async (): Promise<string> => {
+export const getTokenSymbol = async () => {
     const contract = getTokenContract();
     if (contract) {
         try {
@@ -72,9 +72,9 @@ export const getTokenSymbol = async (): Promise<string> => {
 };
 
 export const signMessage = async (
-  address: string,
-  message: string
-): Promise<string | null> => {
+  address,
+  message
+) => {
   if (typeof window.ethereum !== 'undefined') {
     try {
       const signature = await window.ethereum.request({
@@ -90,19 +90,19 @@ export const signMessage = async (
   return null;
 };
 
-export const formatAddress = (address: string): string => {
+export const formatAddress = (address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-export const formatPrice = (price: number, symbol: string): string => {
+export const formatPrice = (price, symbol) => {
   return `${price} ${symbol}`;
 };
 
-export const formatNumber = (num: number): string => {
+export const formatNumber = (num) => {
     return num.toLocaleString();
 };
 
-export const sendToken = async (to: string, amount: number): Promise<string | null> => {
+export const sendToken = async (to, amount) => {
     if (typeof window.ethereum !== 'undefined') {
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
@@ -119,9 +119,3 @@ export const sendToken = async (to: string, amount: number): Promise<string | nu
     }
     return null;
 };
-
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}

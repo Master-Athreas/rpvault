@@ -14,6 +14,7 @@ export interface Car {
   forSale: boolean;
   category: 'car' | 'modification' | 'property';
   description: string;
+  vehicleCode?: string;
 }
 
 export interface User {
@@ -50,4 +51,5 @@ export interface LiveGameTransaction {
   status: 'pending' | 'accepted' | 'declined' | 'expired';
   urgency: 'low' | 'medium' | 'high';
   gameSession?: string;
+  vehicleData?: any; // Optional field to hold the original vehicle data from the server
 }

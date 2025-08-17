@@ -1,6 +1,13 @@
-import React from 'react';
-import { Wallet, LogOut } from 'lucide-react';
-import { connectWallet, getBalance, formatAddress } from '../utils/web3';
+import React, { useState, useEffect } from "react";
+import { Wallet, LogOut } from "lucide-react";
+import {
+  connectWallet,
+  getBalance,
+  formatAddress,
+  getTokenBalance,
+  getTokenSymbol,
+  formatNumber,
+} from "../utils/web3";
 
 interface WalletConnectProps {
   user: any;
@@ -8,6 +15,22 @@ interface WalletConnectProps {
 }
 
 const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
+  const [tokenBalance, setTokenBalance] = useState(0);
+  const [tokenSymbol, setTokenSymbol] = useState("");
+
+  useEffect(() => {
+      const fetchTokenBalance = async () => {
+        if (user?.address) {
+          const token = await getTokenBalance(user.address);
+          const symbol = await getTokenSymbol();
+          setTokenBalance(token);
+          setTokenSymbol(symbol);
+        }
+      };
+  
+      fetchTokenBalance();
+    }, [user]);
+
   const handleConnect = async () => {
     const address = await connectWallet();
     if (address) {
@@ -16,7 +39,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
         address,
         username: `Player_${address.slice(-4)}`,
         balance,
-        ownedAssets: []
+        ownedAssets: [],
       });
     }
   };
@@ -30,13 +53,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
       <div className="flex items-center space-x-4">
         <div className="text-right">
           <div className="text-sm text-gray-300">{formatAddress(user.address)}</div>
-          <div className="text-xs text-blue-400">
-            {Number(user.balance).toLocaleString(undefined, {
-              minimumFractionDigits: 5,
-              maximumFractionDigits: 5,
-            })} ETH
-          </div>
-
+          <div className="text-xs text-blue-400">{user.balance} ETH</div>
+          <div className="text-gray-400 text-xs">{formatNumber(tokenBalance)} {tokenSymbol}</div>
         </div>
         <button
           onClick={handleDisconnect}

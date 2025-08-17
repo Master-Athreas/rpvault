@@ -16,11 +16,11 @@ import {
 } from 'lucide-react';
 import { useLiveTransactions } from '../hooks/useLiveTransactions';
 import { LiveGameTransaction } from '../types';
-import { formatPrice } from '../utils/web3';
+import { formatPrice, getTokenBalance, getTokenSymbol } from '../utils/web3';
 
 interface LiveTransactionFeedProps {
   user: any;
-  onTransactionAccept: (transaction: LiveGameTransaction) => void;
+  onTransactionAccept: (transaction: LiveGameTransaction) => Promise<boolean>;
 }
 
 const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTransactionAccept }) => {
@@ -35,6 +35,23 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [tokenBalance, setTokenBalance] = useState(0);
+  const [tokenSymbol, setTokenSymbol] = useState("ETH");
+  const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
+
+
+  useEffect(() => {
+      const fetchTokenBalance = async () => {
+        if (user?.address) {
+          const token = await getTokenBalance(user.address);
+          const symbol = await getTokenSymbol();
+          setTokenBalance(token);
+          setTokenSymbol(symbol);
+        }
+      };
+  
+      fetchTokenBalance();
+    }, [user]);
 
   useEffect(() => {
     if (newTransactionCount > 0) {
@@ -68,9 +85,16 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
     }
   };
 
-  const handleAccept = (transaction: LiveGameTransaction) => {
-    acceptTransaction(transaction.id);
-    onTransactionAccept(transaction);
+  const handleAccept = async (transaction: LiveGameTransaction) => {
+    setIsProcessingTransaction(true);
+    try {
+      const success = await onTransactionAccept(transaction);
+      if (success) {
+        acceptTransaction(transaction.id);
+      }
+    } finally {
+      setIsProcessingTransaction(false);
+    }
   };
 
   const handleExpand = () => {
@@ -176,11 +200,11 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                     <p className="text-white text-sm font-medium">{transaction.asset.name}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-blue-400 font-semibold">
-                        {formatPrice(transaction.requestedPrice)}
+                        {formatPrice(transaction.requestedPrice, tokenSymbol)}
                       </span>
                       {transaction.currentPrice && transaction.currentPrice !== transaction.requestedPrice && (
                         <span className="text-xs text-gray-400">
-                          Market: {formatPrice(transaction.currentPrice)}
+                          Market: {formatPrice(transaction.currentPrice, tokenSymbol)}
                         </span>
                       )}
                     </div>
@@ -196,15 +220,16 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleAccept(transaction)}
-                        disabled={user.balance < transaction.requestedPrice}
+                        disabled={tokenBalance < transaction.requestedPrice || isProcessingTransaction}
                         className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <CheckCircle className="h-3 w-3" />
-                        <span>Accept</span>
+                        <span>{isProcessingTransaction ? 'Processing...' : 'Buy'}</span>
                       </button>
                       <button
                         onClick={() => declineTransaction(transaction.id)}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
+                        disabled={isProcessingTransaction}
+                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <XCircle className="h-3 w-3" />
                         <span>Decline</span>
