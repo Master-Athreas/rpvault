@@ -97,6 +97,15 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
     }
   };
 
+  const handleDecline = async (transaction: LiveGameTransaction) => {
+    setIsProcessingTransaction(true);
+    try {
+      await declineTransaction(transaction);
+    } finally {
+      setIsProcessingTransaction(false);
+    }
+  };
+
   const handleExpand = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
@@ -227,12 +236,12 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                         <span>{isProcessingTransaction ? 'Processing...' : 'Buy'}</span>
                       </button>
                       <button
-                        onClick={() => declineTransaction(transaction.id)}
+                        onClick={() => handleDecline(transaction)}
                         disabled={isProcessingTransaction}
                         className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <XCircle className="h-3 w-3" />
-                        <span>Decline</span>
+                        <span>{isProcessingTransaction ? 'Processing...' : 'Decline'}</span>
                       </button>
                     </div>
                   )}

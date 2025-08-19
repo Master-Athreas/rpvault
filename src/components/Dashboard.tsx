@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useGameIntegration } from "../context/GameIntegrationContext";
 import {
   Wallet,
@@ -33,6 +33,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [tokenBalance, setTokenBalance] = useState(0);
   const [ownedVehicles, setOwnedVehicles] = useState<CarType[]>([]);
 
+  const fetchPlayerVehicles = useCallback(async (playerId: string) => {
+    setIsLoading(true);
+    try {
+      const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+      const response = await fetch(`${apiUrl}/api/player-vehicles/${playerId}`);
+      const data = await response.json();
+      if (data.success) {
+        const formattedVehicles = data.vehicles.map((v: any) => ({
+          id: v._id,
+          name: `${v.model || 'Unknown'} ${v.niceName || ''}`.trim(),
+          description: `Configuration: ${v.config || 'Stock'}`,
+          price: v.price || 0,
+          vehicleCode: v.vehicleCode,
+          category: 'car',
+          rarity: 'Common',
+          image: `https://via.placeholder.com/400x300.png/1a202c/ffffff?text=${v.model || 'Car'}`,
+          specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 },
+          owner: '',
+          forSale: false,
+        }));
+        setOwnedVehicles(formattedVehicles);
+      } else {
+        console.error("Failed to fetch vehicles:", data.message);
+        setOwnedVehicles([]);
+      }
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+      setOwnedVehicles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
@@ -45,61 +77,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     }
   }, [user?.address]);
 
-
-  
-    // Fetch player vehicles on mount
-    useEffect(() => {
-      const fetchPlayerVehicles = async (playerId: string) => {
-        setIsLoading(true);
-        try {
-          const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
-          const response = await fetch(`${apiUrl}/api/player-vehicles/${playerId}`);
-          const data = await response.json();
-          if (data.success) {
-            // Map API response to CarCard props
-            const formattedVehicles = data.vehicles.map((v: any) => ({
-              id: v._id,
-              name: `${v.model || 'Unknown'} ${v.niceName || ''}`.trim(),
-              description: `Configuration: ${v.config || 'Stock'}`,
-              price: v.price || 0,
-              vehicleCode: v.vehicleCode,
-              category: 'car',
-              rarity: 'Common', // Placeholder
-              image: `https://via.placeholder.com/400x300.png/1a202c/ffffff?text=${v.model || 'Car'}`, // Placeholder
-              specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 }, // Placeholder
-              owner: '', // Placeholder
-              forSale: false, // Placeholder
-            }));
-            setOwnedVehicles(formattedVehicles);
-          } else {
-            console.error("Failed to fetch vehicles:", data.message);
-            setOwnedVehicles([]);
-          }
-        } catch (error) {
-          console.error("Error fetching vehicles:", error);
-          setOwnedVehicles([]);
-        } finally {
+  useEffect(() => {
+    const gameIntegration = localStorage.getItem('gameIntegration');
+    if (user && gameIntegration) {
+      try {
+        const { inGameId } = JSON.parse(gameIntegration);
+        if (inGameId) {
+          fetchPlayerVehicles(inGameId);
+        } else {
           setIsLoading(false);
         }
-      };
-  
-      const gameIntegration = localStorage.getItem('gameIntegration');
-      if (user && gameIntegration) {
-        try {
-          const { inGameId } = JSON.parse(gameIntegration);
-          if (inGameId) {
-            fetchPlayerVehicles(inGameId);
-          } else {
-            setIsLoading(false);
-          }
-        } catch (e) {
-          console.error("Could not parse game integration data", e);
-          setIsLoading(false);
-        }
-      } else {
+      } catch (e) {
+        console.error("Could not parse game integration data", e);
         setIsLoading(false);
       }
-    }, [user]); // Rerun when user object changes
+    } else {
+      setIsLoading(false);
+    }
+  }, [user, fetchPlayerVehicles]);
 
   const handleLiveTransactionAccept = async (
     transaction: LiveGameTransaction
@@ -141,15 +136,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              vehicleData: transaction.vehicleData,
+              vehicleCode: transaction.vehicleCode,
               playerId: inGameId,
             }),
           });
           const result = await response.json();
           if (result.success) {
             alert(
-              `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update on next refresh.`
+              `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update shortly.`
             );
+            fetchPlayerVehicles(inGameId);
           } else {
             alert(
               `On-chain TX succeeded, but backend update failed: ${result.message}`

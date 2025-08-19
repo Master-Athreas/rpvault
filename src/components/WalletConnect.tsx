@@ -8,6 +8,7 @@ import {
   getTokenSymbol,
   formatNumber,
   disconnectWallet,
+  checkConnection,
 } from "../utils/web3";
 
 interface WalletConnectProps {
@@ -20,17 +21,61 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
   const [tokenSymbol, setTokenSymbol] = useState("");
 
   useEffect(() => {
-      const fetchTokenBalance = async () => {
-        if (user?.address) {
-          const token = await getTokenBalance(user.address);
-          const symbol = await getTokenSymbol();
-          setTokenBalance(token);
-          setTokenSymbol(symbol);
-        }
-      };
-  
-      fetchTokenBalance();
-    }, [user]);
+    const autoConnect = async () => {
+      const address = await checkConnection();
+      if (address) {
+        const balance = await getBalance(address);
+        setUser({
+          address,
+          username: `Player_${address.slice(-4)}`,
+          balance,
+          ownedAssets: [],
+        });
+      }
+    };
+    autoConnect();
+  }, [setUser]);
+
+  useEffect(() => {
+    const fetchTokenBalance = async () => {
+      if (user?.address) {
+        const token = await getTokenBalance(user.address);
+        const symbol = await getTokenSymbol();
+        setTokenBalance(token);
+        setTokenSymbol(symbol);
+      }
+    };
+
+    fetchTokenBalance();
+
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
+      }
+    };
+  }, [user]);
+
+  const handleAccountsChanged = async (accounts: string[]) => {
+    if (accounts.length > 0) {
+      const address = accounts[0];
+      const balance = await getBalance(address);
+      setUser({
+        address,
+        username: `Player_${address.slice(-4)}`,
+        balance,
+        ownedAssets: [],
+      });
+    } else {
+      setUser(null);
+    }
+  };
 
   const handleConnect = async () => {
     const address = await connectWallet();
@@ -54,9 +99,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
     return (
       <div className="flex items-center space-x-4">
         <div className="text-right">
-          <div className="text-sm text-gray-300">{formatAddress(user.address)}</div>
+          <div className="text-sm text-gray-300">
+            {formatAddress(user.address)}
+          </div>
           <div className="text-xs text-blue-400">{user.balance} ETH</div>
-          <div className="text-gray-400 text-xs">{formatNumber(tokenBalance)} {tokenSymbol}</div>
+          <div className="text-gray-400 text-xs">
+            {formatNumber(tokenBalance)} {tokenSymbol}
+          </div>
         </div>
         <button
           onClick={handleDisconnect}

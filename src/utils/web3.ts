@@ -28,6 +28,22 @@ export const connectWallet = async (): Promise<string | null> => {
   }
 };
 
+export const checkConnection = async (): Promise<string | null> => {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                return accounts[0];
+            }
+            return null;
+        } catch (error) {
+            console.error('Failed to check connection:', error);
+            return null;
+        }
+    }
+    return null;
+};
+
 export const getBalance = async (address: string): Promise<number> => {
   if (typeof window.ethereum !== 'undefined') {
     try {

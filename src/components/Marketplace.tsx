@@ -98,7 +98,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              vehicleData: transaction.vehicleData,
+              vehicleCode: transaction.vehicleCode,
               playerId: playerId,
             }),
           });

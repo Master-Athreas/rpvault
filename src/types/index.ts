@@ -52,4 +52,5 @@ export interface LiveGameTransaction {
   urgency: 'low' | 'medium' | 'high';
   gameSession?: string;
   vehicleData?: any; // Optional field to hold the original vehicle data from the server
+  vehicleCode?: string; // Added vehicleCode
 }
