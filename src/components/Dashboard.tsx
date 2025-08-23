@@ -36,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const fetchPlayerVehicles = useCallback(async (playerId: string) => {
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+      const apiUrl = import.meta.env.VITE_APP_API_URL || "https://midnightplus.example";
       const response = await fetch(`${apiUrl}/api/player-vehicles/${playerId}`);
       const data = await response.json();
       if (data.success) {
@@ -131,7 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         try {
           const apiUrl =
             import.meta.env.VITE_APP_API_URL ||
-            "https://racevault.onrender.com";
+            "https://midnightplus.example";
           const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-midnight-900 flex items-center justify-center">
         <div className="text-center">
           <Wallet className="h-16 w-16 text-gray-600 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">
@@ -191,7 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-midnight-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
@@ -203,7 +203,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         <div className="mb-6">
           <button
             onClick={() => setShowGamePanel(!showGamePanel)}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
+            className="bg-gradient-to-r from-neon-500 to-neon-400 hover:from-neon-600 hover:to-neon-500 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
           >
             {showGamePanel ? "Hide" : "Show"} Game Integration
           </button>
@@ -217,11 +217,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Wallet Balance</p>
-                <p className="text-2xl font-bold text-blue-400">
+                <p className="text-2xl font-bold text-neon-400">
                   {Number(user.balance).toLocaleString(undefined, {
                     minimumFractionDigits: 5,
                     maximumFractionDigits: 5,
@@ -229,26 +229,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   ETH
                 </p>
               </div>
-              <Wallet className="h-8 w-8 text-blue-400" />
+              <Wallet className="h-8 w-8 text-neon-400" />
             </div>
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Token Balance</p>
-                <p className="text-2xl font-bold text-purple-400">
+                <p className="text-2xl font-bold text-neon-400">
                   {tokenBalance.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </p>
               </div>
-              <Coins className="h-8 w-8 text-purple-400" />
+              <Coins className="h-8 w-8 text-neon-400" />
             </div>
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Portfolio Value</p>
@@ -260,13 +260,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             </div>
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Assets</p>
-                <p className="text-2xl font-bold text-purple-400">{ownedVehicles.length}</p>
+                <p className="text-2xl font-bold text-neon-400">{ownedVehicles.length}</p>
               </div>
-              <Award className="h-8 w-8 text-purple-400" />
+              <Award className="h-8 w-8 text-neon-400" />
             </div>
           </div>
         </div>
@@ -277,8 +277,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             onClick={() => setActiveTab("portfolio")}
             className={`px-6 py-3 rounded-lg font-semibold transition-colors duration-200 ${
               activeTab === "portfolio"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
+                ? "bg-neon-500 text-white"
+                : "bg-midnight-800 text-gray-400 hover:text-white"
             }`}
           >
             My Portfolio
@@ -287,8 +287,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             onClick={() => setActiveTab("transactions")}
             className={`px-6 py-3 rounded-lg font-semibold transition-colors duration-200 ${
               activeTab === "transactions"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
+                ? "bg-neon-500 text-white"
+                : "bg-midnight-800 text-gray-400 hover:text-white"
             }`}
           >
             Transaction History
@@ -299,21 +299,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div>
             {/* Category Breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
-                <Car className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+              <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6 text-center">
+                <Car className="h-8 w-8 text-neon-400 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-white">
                   {categoryStats.car || 0}
                 </p>
                 <p className="text-gray-400">Cars</p>
               </div>
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
+              <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6 text-center">
                 <Zap className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-white">
                   {categoryStats.modification || 0}
                 </p>
                 <p className="text-gray-400">Modifications</p>
               </div>
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
+              <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6 text-center">
                 <Home className="h-8 w-8 text-green-400 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-white">
                   {categoryStats.property || 0}
@@ -325,7 +325,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             {/* Owned Assets */}
                         {isLoading ? (
                           <div className="text-center py-16">
-                            <Loader2 className="h-16 w-16 text-blue-500 mx-auto mb-4 animate-spin" />
+                            <Loader2 className="h-16 w-16 text-neon-500 mx-auto mb-4 animate-spin" />
                             <h3 className="text-xl font-semibold text-gray-400">Loading Your Vehicles...</h3>
                           </div>
                         ) : ownedVehicles.length > 0 ? (
@@ -345,24 +345,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         )}
 
         {activeTab === "transactions" && (
-          <div className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
-            <div className="p-6 border-b border-gray-700">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-midnight-700">
               <h3 className="text-xl font-bold text-white">
                 Recent Transactions
               </h3>
             </div>
-            <div className="divide-y divide-gray-700">
+            <div className="divide-y divide-midnight-700">
               {mockTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="p-6 hover:bg-gray-750 transition-colors duration-200"
+                  className="p-6 hover:bg-midnight-700 transition-colors duration-200"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div
                         className={`p-2 rounded-full ${
                           transaction.type === "purchase"
-                            ? "bg-blue-500/20 text-blue-400"
+                            ? "bg-neon-500/20 text-neon-400"
                             : transaction.type === "sale"
                             ? "bg-green-500/20 text-green-400"
                             : "bg-purple-500/20 text-purple-400"

@@ -12,7 +12,7 @@ function App() {
   return (
     <GameIntegrationProvider>
       <Router>
-        <div className="min-h-screen bg-gray-900">
+        <div className="min-h-screen bg-midnight-900">
           <Header user={user} setUser={setUser} />
           <Routes>
             <Route path="/" element={<Marketplace user={user} setUser={setUser} />} />

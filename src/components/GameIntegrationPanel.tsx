@@ -79,10 +79,10 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
   };
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+    <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+          <div className="bg-gradient-to-r from-neon-500 to-neon-400 p-2 rounded-lg">
             <Gamepad2 className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -94,7 +94,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       </div>
 
       {/* Connection Status */}
-      <div className="bg-gray-750 rounded-lg p-4 mb-6">
+      <div className="bg-midnight-700 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <div className={getStatusColor()}>
@@ -126,7 +126,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
             className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 ${
               isGameConnected
                 ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-neon-500 hover:bg-neon-600 text-white'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isGameConnected ? 'Disconnect' : 'Connect Game'}
@@ -137,13 +137,13 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
               <button
                 onClick={handleSync}
                 disabled={gameStatus === 'syncing'}
-                className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-neon-500 hover:bg-neon-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw className={`h-4 w-4 ${gameStatus === 'syncing' ? 'animate-spin' : ''}`} />
               </button>
               <button
                 onClick={handlePairing}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200"
+                className="bg-neon-600 hover:bg-neon-500 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200"
               >
                 Pair with Game
               </button>
@@ -153,9 +153,9 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       </div>
 
       {isGameConnected && syncCode && (
-        <div className="bg-gray-750 rounded-lg p-4 mb-6 text-center">
+        <div className="bg-midnight-700 rounded-lg p-4 mb-6 text-center">
           <p className="text-gray-300 mb-2">Type this command in BeamMP chat to pair:</p>
-          <div className="font-mono text-white bg-gray-800 px-3 py-2 rounded-lg inline-block select-all">
+          <div className="font-mono text-white bg-midnight-800 px-3 py-2 rounded-lg inline-block select-all">
             /sync {syncCode}
           </div>
         </div>
@@ -165,13 +165,13 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       {isGameConnected && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-750 rounded-lg p-3 text-center">
+            <div className="bg-midnight-700 rounded-lg p-3 text-center">
               <Zap className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
               <p className="text-white font-semibold">Real-time Sync</p>
               <p className="text-xs text-gray-400">Assets sync automatically</p>
             </div>
-            <div className="bg-gray-750 rounded-lg p-3 text-center">
-              <Clock className="h-6 w-6 text-blue-400 mx-auto mb-2" />
+            <div className="bg-midnight-700 rounded-lg p-3 text-center">
+              <Clock className="h-6 w-6 text-neon-400 mx-auto mb-2" />
               <p className="text-white font-semibold">Live Transactions</p>
               <p className="text-xs text-gray-400">Instant game notifications</p>
             </div>
@@ -179,7 +179,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
 
           {/* Game Account Info */}
           {inGameId && user && (
-            <div className="bg-gray-750 rounded-lg p-4">
+            <div className="bg-midnight-700 rounded-lg p-4">
               <h4 className="text-white font-semibold mb-2">Linked Account</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -195,7 +195,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
                 <button
                   onClick={handleSync}
                   disabled={gameStatus === 'syncing'}
-                  className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-neon-500 hover:bg-neon-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Sync Assets
                 </button>
@@ -214,7 +214,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
 
       {/* Connection Instructions */}
       {!isGameConnected && (
-        <div className="bg-gray-750 rounded-lg p-4">
+        <div className="bg-midnight-700 rounded-lg p-4">
           <h4 className="text-white font-semibold mb-2">How to Connect</h4>
           <ol className="text-sm text-gray-400 space-y-1">
             <li>1. Launch your racing game</li>

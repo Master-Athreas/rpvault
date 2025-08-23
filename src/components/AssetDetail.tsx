@@ -15,7 +15,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
     switch (rarity) {
       case 'Legendary': return 'from-yellow-400 to-orange-500';
       case 'Epic': return 'from-purple-400 to-pink-500';
-      case 'Rare': return 'from-blue-400 to-cyan-500';
+      case 'Rare': return 'from-neon-400 to-neon-500';
       default: return 'from-gray-400 to-gray-500';
     }
   };
@@ -31,7 +31,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-midnight-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <button
@@ -65,11 +65,11 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
             </div>
 
             {/* Price */}
-            <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+            <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Current Price</p>
-                  <p className="text-3xl font-bold text-blue-400">{formatPrice(asset.price)}</p>
+                  <p className="text-3xl font-bold text-neon-400">{formatPrice(asset.price)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-400 text-sm">Category</p>
@@ -80,7 +80,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
 
             {/* Specifications */}
             {(asset.category === 'car' || asset.category === 'modification') && (
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+              <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-white mb-4">Specifications</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {Object.entries(asset.specs).map(([stat, value]) => (
@@ -92,9 +92,9 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
                         </div>
                         <span className="text-white font-semibold">{value}</span>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-midnight-700 rounded-full h-2">
                         <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-neon-500 to-neon-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${value}%` }}
                         />
                       </div>
@@ -105,17 +105,17 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
             )}
 
             {/* Transaction History */}
-            <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+            <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
               <h3 className="text-xl font-bold text-white mb-4">Transaction History</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                <div className="flex items-center justify-between py-2 border-b border-midnight-700">
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-400">Listed for sale</span>
                   </div>
                   <span className="text-white">2 days ago</span>
                 </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                <div className="flex items-center justify-between py-2 border-b border-midnight-700">
                   <div className="flex items-center space-x-2">
                     <Award className="h-4 w-4 text-green-400" />
                     <span className="text-gray-400">Minted</span>
@@ -131,7 +131,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
                 <button
                   onClick={() => onBuy(asset)}
                   disabled={!user || user.balance < asset.price}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105"
+                  className="w-full bg-gradient-to-r from-neon-500 to-neon-400 hover:from-neon-600 hover:to-neon-500 disabled:from-midnight-600 disabled:to-midnight-700 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105"
                 >
                   {!user ? 'Connect Wallet to Buy' : 
                    user.balance < asset.price ? 'Insufficient Balance' : 
@@ -139,7 +139,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
                 </button>
               )}
               
-              <button className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors duration-200">
+              <button className="w-full bg-midnight-700 hover:bg-midnight-600 text-white font-semibold py-3 rounded-xl transition-colors duration-200">
                 Make Offer
               </button>
             </div>

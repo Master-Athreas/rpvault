@@ -15,7 +15,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
     switch (rarity) {
       case 'Legendary': return 'from-yellow-400 to-orange-500';
       case 'Epic': return 'from-purple-400 to-pink-500';
-      case 'Rare': return 'from-blue-400 to-cyan-500';
+      case 'Rare': return 'from-neon-400 to-neon-500';
       default: return 'from-gray-400 to-gray-500';
     }
   };
@@ -30,7 +30,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-blue-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+    <div className="bg-midnight-800 rounded-xl overflow-hidden border border-midnight-700 hover:border-neon-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
       {/* Image */}
       <div className="relative">
         <img
@@ -52,7 +52,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
         {car.vehicleCode && (
           <div className="mb-2">
             <p className="text-xs text-gray-400">VEHICLE CODE</p>
-            <p className="text-sm font-mono text-cyan-400 bg-gray-900 px-2 py-1 rounded">{car.vehicleCode}</p>
+            <p className="text-sm font-mono text-cyan-400 bg-midnight-900 px-2 py-1 rounded">{car.vehicleCode}</p>
           </div>
         )}
         <p className="text-gray-400 text-sm mb-3 line-clamp-2">{car.description}</p>
@@ -61,7 +61,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
         {(car.category === 'car' || car.category === 'modification') && (
           <div className="grid grid-cols-2 gap-2 mb-4">
             <div className="flex items-center space-x-1 text-sm">
-              <Gauge className="h-3 w-3 text-blue-400" />
+              <Gauge className="h-3 w-3 text-neon-400" />
               <span className="text-gray-400">Speed:</span>
               <span className="text-white">{car.specs.speed}</span>
             </div>
@@ -75,20 +75,20 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
 
         {/* Price and Actions */}
         <div className="flex items-center justify-between">
-          <div className="text-lg font-bold text-blue-400">
+          <div className="text-lg font-bold text-neon-400">
             {formatPrice(car.price, 'UNT')}
           </div>
           <div className="flex space-x-2">
             <button
               onClick={() => onView?.(car)}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors duration-200"
+              className="px-3 py-1 bg-midnight-700 hover:bg-midnight-600 text-white text-sm rounded-lg transition-colors duration-200"
             >
               View
             </button>
             {showBuyButton && car.forSale && (
               <button
                 onClick={() => onBuy?.(car)}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm rounded-lg transition-all duration-200"
+                className="px-3 py-1 bg-gradient-to-r from-neon-500 to-neon-400 hover:from-neon-600 hover:to-neon-500 text-white text-sm rounded-lg transition-all duration-200"
               >
                 Buy Now
               </button>

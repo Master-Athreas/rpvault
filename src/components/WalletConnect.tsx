@@ -102,7 +102,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
           <div className="text-sm text-gray-300">
             {formatAddress(user.address)}
           </div>
-          <div className="text-xs text-blue-400">{user.balance} ETH</div>
+          <div className="text-xs text-neon-400">{user.balance} ETH</div>
           <div className="text-gray-400 text-xs">
             {formatNumber(tokenBalance)} {tokenSymbol}
           </div>
@@ -121,7 +121,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
   return (
     <button
       onClick={handleConnect}
-      className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105"
+      className="flex items-center space-x-2 bg-gradient-to-r from-neon-500 to-neon-400 hover:from-neon-600 hover:to-neon-500 text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105"
     >
       <Wallet className="h-4 w-4" />
       <span>Connect Wallet</span>

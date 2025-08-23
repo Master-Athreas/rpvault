@@ -10,8 +10,8 @@ const Analytics: React.FC = () => {
   ];
 
   const categoryData = [
-    { category: 'Cars', volume: '1,245 ETH', count: 3421, icon: Car, color: 'bg-blue-500' },
-    { category: 'Modifications', volume: '892 ETH', count: 5643, icon: Zap, color: 'bg-yellow-500' },
+    { category: 'Cars', volume: '1,245 ETH', count: 3421, icon: Car, color: 'bg-neon-500' },
+    { category: 'Modifications', volume: '892 ETH', count: 5643, icon: Zap, color: 'bg-purple-500' },
     { category: 'Property', volume: '710 ETH', count: 876, icon: Home, color: 'bg-green-500' }
   ];
 
@@ -22,12 +22,12 @@ const Analytics: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-midnight-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Market Analytics</h1>
-          <p className="text-gray-400">Real-time insights into the RaceVault marketplace</p>
+          <p className="text-gray-400">Real-time insights into the Midnight+ marketplace</p>
         </div>
 
         {/* Market Stats */}
@@ -35,9 +35,9 @@ const Analytics: React.FC = () => {
           {marketStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div key={index} className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+              <div key={index} className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <Icon className="h-8 w-8 text-blue-400" />
+                  <Icon className="h-8 w-8 text-neon-400" />
                   <span className="text-green-400 text-sm font-semibold">{stat.change}</span>
                 </div>
                 <p className="text-gray-400 text-sm">{stat.label}</p>
@@ -49,13 +49,13 @@ const Analytics: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Category Performance */}
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <h3 className="text-xl font-bold text-white mb-6">Category Performance</h3>
             <div className="space-y-4">
               {categoryData.map((category, index) => {
                 const Icon = category.icon;
                 return (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-750 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-midnight-700 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className={`p-2 rounded-lg ${category.color}/20`}>
                         <Icon className={`h-5 w-5 text-${category.color.split('-')[1]}-400`} />
@@ -67,7 +67,7 @@ const Analytics: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-white font-semibold">{category.volume}</p>
-                      <div className="w-20 bg-gray-700 rounded-full h-2 mt-1">
+                      <div className="w-20 bg-midnight-600 rounded-full h-2 mt-1">
                         <div 
                           className={`${category.color} h-2 rounded-full transition-all duration-300`}
                           style={{ width: `${(index + 1) * 30}%` }}
@@ -81,12 +81,12 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* Top Sales */}
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div className="bg-midnight-800 border border-midnight-700 rounded-xl p-6">
             <h3 className="text-xl font-bold text-white mb-6">Top Sales (24h)</h3>
             <div className="space-y-4">
               {topSales.map((sale, index) => (
-                <div key={index} className="flex items-center space-x-4 p-4 bg-gray-750 rounded-lg hover:bg-gray-700 transition-colors duration-200">
-                  <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white font-bold text-sm">
+                <div key={index} className="flex items-center space-x-4 p-4 bg-midnight-700 rounded-lg hover:bg-midnight-600 transition-colors duration-200">
+                  <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-neon-500 to-neon-400 rounded-full text-white font-bold text-sm">
                     #{index + 1}
                   </div>
                   <img
@@ -96,7 +96,7 @@ const Analytics: React.FC = () => {
                   />
                   <div className="flex-1">
                     <p className="text-white font-semibold">{sale.name}</p>
-                    <p className="text-blue-400 font-bold">{sale.price}</p>
+                    <p className="text-neon-400 font-bold">{sale.price}</p>
                   </div>
                   <TrendingUp className="h-5 w-5 text-green-400" />
                 </div>
@@ -106,9 +106,9 @@ const Analytics: React.FC = () => {
         </div>
 
         {/* Market Trends Chart Placeholder */}
-        <div className="mt-8 bg-gray-800 border border-gray-700 rounded-xl p-6">
+        <div className="mt-8 bg-midnight-800 border border-midnight-700 rounded-xl p-6">
           <h3 className="text-xl font-bold text-white mb-6">Market Trends</h3>
-          <div className="h-64 bg-gray-750 rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-midnight-700 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="h-12 w-12 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400">Market trends chart will be implemented with real data</p>

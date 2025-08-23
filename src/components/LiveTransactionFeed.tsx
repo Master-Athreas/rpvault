@@ -64,7 +64,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
   const getTransactionIcon = (type: LiveGameTransaction['type']) => {
     switch (type) {
       case 'buy_request': return <TrendingUp className="h-4 w-4 text-green-400" />;
-      case 'sell_offer': return <TrendingDown className="h-4 w-4 text-blue-400" />;
+      case 'sell_offer': return <TrendingDown className="h-4 w-4 text-neon-400" />;
       case 'trade_request': return <ArrowRightLeft className="h-4 w-4 text-purple-400" />;
     }
   };
@@ -117,7 +117,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
     <div className="fixed bottom-4 right-4 z-50">
       {/* Notification Toast */}
       {showNotification && (
-        <div className="absolute bottom-full right-0 mb-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg animate-bounce">
+        <div className="absolute bottom-full right-0 mb-4 bg-neon-500 text-white px-4 py-2 rounded-lg shadow-lg animate-bounce">
           <div className="flex items-center space-x-2">
             <Bell className="h-4 w-4" />
             <span className="text-sm font-semibold">New game transaction!</span>
@@ -126,12 +126,12 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
       )}
 
       {/* Feed Container */}
-      <div className={`bg-gray-800 border border-gray-700 rounded-xl shadow-2xl transition-all duration-300 ${
+      <div className={`bg-midnight-800 border border-midnight-700 rounded-xl shadow-2xl transition-all duration-300 ${
         isExpanded ? 'w-96 h-96' : 'w-80 h-16'
       }`}>
         {/* Header */}
         <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-750 rounded-t-xl"
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-midnight-700 rounded-t-xl"
           onClick={handleExpand}
         >
           <div className="flex items-center space-x-3">
@@ -141,7 +141,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
               ) : (
                 <WifiOff className="h-5 w-5 text-red-400" />
               )}
-              <Zap className="h-5 w-5 text-blue-400" />
+              <Zap className="h-5 w-5 text-neon-400" />
             </div>
             <div>
               <h3 className="text-white font-semibold">Live Game Feed</h3>
@@ -208,7 +208,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                   <div className="mb-2">
                     <p className="text-white text-sm font-medium">{transaction.asset.name}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-blue-400 font-semibold">
+                      <span className="text-neon-400 font-semibold">
                         {formatPrice(transaction.requestedPrice, tokenSymbol)}
                       </span>
                       {transaction.currentPrice && transaction.currentPrice !== transaction.requestedPrice && (
@@ -230,7 +230,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                       <button
                         onClick={() => handleAccept(transaction)}
                         disabled={tokenBalance < transaction.requestedPrice || isProcessingTransaction}
-                        className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
+                        className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-midnight-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <CheckCircle className="h-3 w-3" />
                         <span>{isProcessingTransaction ? 'Processing...' : 'Buy'}</span>
@@ -238,7 +238,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                       <button
                         onClick={() => handleDecline(transaction)}
                         disabled={isProcessingTransaction}
-                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
+                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-midnight-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <XCircle className="h-3 w-3" />
                         <span>{isProcessingTransaction ? 'Processing...' : 'Decline'}</span>

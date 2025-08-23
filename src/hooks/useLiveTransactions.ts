@@ -10,7 +10,7 @@ export const useLiveTransactions = () => {
   // Simulate WebSocket connection
   useEffect(() => {
     const apiUrl =
-      import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+      import.meta.env.VITE_APP_API_URL || "https://midnightplus.example";
     const eventSource = new EventSource(`${apiUrl}/events`);
 
     eventSource.onopen = () => {
@@ -111,7 +111,7 @@ export const useLiveTransactions = () => {
   }, []);
 
   const declineTransaction = useCallback(async (transaction: LiveGameTransaction) => {
-    const apiUrl = import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+    const apiUrl = import.meta.env.VITE_APP_API_URL || "https://midnightplus.example";
     try {
       const response = await fetch(`${apiUrl}/api/reject-purchase`, {
         method: "POST",

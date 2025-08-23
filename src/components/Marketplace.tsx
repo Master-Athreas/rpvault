@@ -93,7 +93,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
         try {
           const apiUrl =
             import.meta.env.VITE_APP_API_URL ||
-            "https://racevault.onrender.com";
+            "https://midnightplus.example";
           const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -161,12 +161,12 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-midnight-900">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-pink-900 py-16">
+      <div className="bg-gradient-to-r from-midnight-900 via-midnight-800 to-midnight-700 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            RaceVault <span className="text-blue-400">Marketplace</span>
+            Midnight+ <span className="text-neon-400">Marketplace</span>
           </h1>
           <p className="text-xl text-gray-300 mb-8">
             Discover, collect, and trade the most exclusive racing NFTs
@@ -179,13 +179,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
               placeholder="Search cars, modifications, and properties..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="w-full pl-12 pr-4 py-3 bg-midnight-800 border border-midnight-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-neon-500"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-8">
           {/* Category Filter */}
@@ -198,8 +198,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
                     selectedCategory === category.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      ? "bg-neon-500 text-white"
+                      : "bg-midnight-800 text-gray-300 hover:bg-midnight-700"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -213,7 +213,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user, setUser }) => {
           <select
             value={selectedRarity}
             onChange={(e) => setSelectedRarity(e.target.value)}
-            className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+            className="bg-midnight-800 border border-midnight-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-neon-500"
           >
             {rarities.map((rarity) => (
               <option key={rarity} value={rarity}>

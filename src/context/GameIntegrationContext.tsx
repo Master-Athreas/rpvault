@@ -84,7 +84,7 @@ export const GameIntegrationProvider = ({
     }));
 
     const apiUrl =
-      import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+      import.meta.env.VITE_APP_API_URL || "https://midnightplus.example";
 
     try {
       // Fetch the user's actual token balance
