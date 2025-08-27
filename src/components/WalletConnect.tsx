@@ -102,7 +102,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
           <div className="text-sm text-gray-300">
             {formatAddress(user.address)}
           </div>
-          <div className="text-xs text-blue-400">{user.balance} ETH</div>
+          <div className="text-xs text-blue-400">
+            {Number(user.balance).toFixed(5)} ETH
+          </div>
+
           <div className="text-gray-400 text-xs">
             {formatNumber(tokenBalance)} {tokenSymbol}
           </div>
