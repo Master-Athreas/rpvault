@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { LiveGameTransaction } from "../types";
-// import { mockCars } from "../data/mockData";
+import { useGameIntegration } from "../context/GameIntegrationContext";
 
 export const useLiveTransactions = () => {
   const [transactions, setTransactions] = useState<LiveGameTransaction[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [newTransactionCount, setNewTransactionCount] = useState(0);
+  const { inGameId } = useGameIntegration();
 
   // Simulate WebSocket connection
   useEffect(() => {
@@ -21,21 +22,6 @@ export const useLiveTransactions = () => {
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-
-        // Check local storage for gameIntegration and inGameId
-        const gameIntegration = localStorage.getItem("gameIntegration");
-        let inGameId = null;
-        if (gameIntegration) {
-          try {
-            const parsedIntegration = JSON.parse(gameIntegration);
-            inGameId = parsedIntegration.inGameId;
-          } catch (parseError) {
-            console.error(
-              "Failed to parse gameIntegration from localStorage:",
-              parseError
-            );
-          }
-        }
 
         // Only process if inGameId exists and the player is not the one who spawned the car
         if (inGameId && data.vehicle.playerName == inGameId) {
@@ -57,6 +43,7 @@ export const useLiveTransactions = () => {
               rarity: "Common",
               specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 },
               owner: "",
+              owner_address: "",
               forSale: true,
               category: "car",
               description: data.vehicle.model || "",

@@ -11,14 +11,25 @@ export interface Car {
     durability: number;
   };
   owner: string;
+  owner_address: string;
   forSale: boolean;
   category: 'car' | 'modification' | 'property';
   description: string;
   vehicleCode?: string;
+  details?: {
+    engine?: string;
+    transmission?: string;
+    suspension_F?: string;
+    suspension_R?: string;
+    [key: string]: any;
+  };
+  isListed?: boolean; // Added for listing status
+  listingId?: string | null; // Added for listing ID
 }
 
 export interface User {
-  address: string;
+  _id: string; // Added for MongoDB document ID
+  walletAddress: string;
   username: string;
   balance: number;
   ownedAssets: Car[];

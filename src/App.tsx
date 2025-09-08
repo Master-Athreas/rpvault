@@ -10,7 +10,7 @@ function App() {
   const [user, setUser] = useState<any>(null);
 
   return (
-    <GameIntegrationProvider>
+    <GameIntegrationProvider connectedWalletAddress={user?.walletAddress}>
       <Router>
         <div className="min-h-screen bg-gray-900">
           <Header user={user} setUser={setUser} />

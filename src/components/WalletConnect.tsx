@@ -10,7 +10,6 @@ import {
   disconnectWallet,
   checkConnection,
 } from "../utils/web3";
-
 interface WalletConnectProps {
   user: any;
   setUser: (user: any) => void;
@@ -20,17 +19,45 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
   const [tokenBalance, setTokenBalance] = useState(0);
   const [tokenSymbol, setTokenSymbol] = useState("");
 
+  const fetchUserFromBackend = async (walletAddress: string) => {
+    const apiUrl =
+      import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+    try {
+      const response = await fetch(`${apiUrl}/api/users/wallet/${walletAddress}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          return data.user; // This should contain _id, playerId, etc.
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user from backend:", error);
+    }
+    return null;
+  };
+
   useEffect(() => {
     const autoConnect = async () => {
       const address = await checkConnection();
       if (address) {
-        const balance = await getBalance(address);
-        setUser({
-          address,
-          username: `Player_${address.slice(-4)}`,
-          balance,
-          ownedAssets: [],
-        });
+        const backendUser = await fetchUserFromBackend(address);
+        const balance = await getBalance(address); // Always fetch balance
+        const token = await getTokenBalance(address);
+        const symbol = await getTokenSymbol();
+        if (backendUser) {
+          setUser({ ...backendUser, balance, tokenBalance: token, tokenSymbol: symbol }); // Merge balance and token data with backend user data
+        } else {
+          // If user not found in backend, create a basic user object
+          setUser({
+            walletAddress: address,
+            username: `Player_${address.slice(-4)}`,
+            balance: formatNumber(balance),
+            tokenBalance: formatNumber(token),
+            tokenSymbol: symbol,
+            ownedAssets: [],
+            _id: null, // Indicate no backend ID yet
+          });
+        }
       }
     };
     autoConnect();
@@ -38,8 +65,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
-      if (user?.address) {
-        const token = await getTokenBalance(user.address);
+      if (user?.walletAddress) {
+        const token = await getTokenBalance(user.walletAddress);
         const symbol = await getTokenSymbol();
         setTokenBalance(token);
         setTokenSymbol(symbol);
@@ -65,13 +92,24 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
   const handleAccountsChanged = async (accounts: string[]) => {
     if (accounts.length > 0) {
       const address = accounts[0];
-      const balance = await getBalance(address);
-      setUser({
-        address,
-        username: `Player_${address.slice(-4)}`,
-        balance,
-        ownedAssets: [],
-      });
+      const backendUser = await fetchUserFromBackend(address);
+      const balance = await getBalance(address); // Always fetch balance
+      const token = await getTokenBalance(address);
+      const symbol = await getTokenSymbol();
+      if (backendUser) {
+        setUser({ ...backendUser, balance, tokenBalance: token, tokenSymbol: symbol }); // Merge balance and token data with backend user data
+      } else {
+        // If user not found in backend, create a basic user object
+        setUser({
+          walletAddress: address,
+          username: `Player_${address.slice(-4)}`,
+          balance: formatNumber(balance),
+          tokenBalance: formatNumber(token),
+          tokenSymbol: symbol,
+          ownedAssets: [],
+          _id: null, // Indicate no backend ID yet
+        });
+      }
     } else {
       setUser(null);
     }
@@ -80,13 +118,24 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
   const handleConnect = async () => {
     const address = await connectWallet();
     if (address) {
-      const balance = await getBalance(address);
-      setUser({
-        address,
-        username: `Player_${address.slice(-4)}`,
-        balance,
-        ownedAssets: [],
-      });
+      const backendUser = await fetchUserFromBackend(address);
+      const balance = await getBalance(address); // Always fetch balance
+      const token = await getTokenBalance(address);
+      const symbol = await getTokenSymbol();
+      if (backendUser) {
+        setUser({ ...backendUser, balance, tokenBalance: token, tokenSymbol: symbol }); // Merge balance and token data with backend user data
+      } else {
+        // If user not found in backend, create a basic user object
+        setUser({
+          walletAddress: address,
+          username: `Player_${address.slice(-4)}`,
+          balance: formatNumber(balance),
+          tokenBalance: formatNumber(token),
+          tokenSymbol: symbol,
+          ownedAssets: [],
+          _id: null, // Indicate no backend ID yet
+        });
+      }
     }
   };
 
@@ -100,9 +149,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
       <div className="flex items-center space-x-4">
         <div className="text-right">
           <div className="text-sm text-gray-300">
-            {formatAddress(user.address)}
+            {formatAddress(user.walletAddress)}
           </div>
-          <div className="text-xs text-blue-400">{user.balance} ETH</div>
+          <div className="text-xs text-blue-400">{formatNumber(user.balance)} ETH</div>
           <div className="text-gray-400 text-xs">
             {formatNumber(tokenBalance)} {tokenSymbol}
           </div>

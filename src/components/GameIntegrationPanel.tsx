@@ -15,10 +15,9 @@ import {
 
 interface GameIntegrationPanelProps {
   user: any;
-  tokenBalance: number; // ✅ Add this
 }
 
-const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, tokenBalance }) => {
+const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user }) => {
   const {
     isGameConnected,
     gameStatus,
@@ -28,12 +27,18 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
     disconnectGame,
     requestPairing,
     syncAssets,
+    userData,
   } = useGameIntegration();
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
   const handlePairing = async () => {
-    if (!user) return;
-    await requestPairing(user.address, tokenBalance); // ✅ Use correct token balance
+    // Use the 'user' prop for walletAddress and balance, as it's guaranteed to be populated by WalletConnect
+    if (!user || !user.walletAddress || user.tokenBalance === undefined) {
+      alert("Wallet not connected or balance not available.");
+      return;
+    }
+
+    await requestPairing(user.walletAddress, user.tokenBalance);
   };
 
   const handleGameConnection = async () => {
@@ -41,13 +46,13 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       disconnectGame();
       return;
     }
-    await connectGame();
+    await connectGame(user.walletAddress);
     setLastSync(new Date());
   };
 
   const handleSync = async () => {
-    if (!user) return;
-    await syncAssets(user.address);
+    if (!userData || !userData.walletAddress) return;
+    await syncAssets(userData.walletAddress);
     setLastSync(new Date());
   };
 
@@ -152,7 +157,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
         </div>
       </div>
 
-      {isGameConnected && syncCode && (
+      {isGameConnected && user && syncCode && (
         <div className="bg-gray-750 rounded-lg p-4 mb-6 text-center">
           <p className="text-gray-300 mb-2">Type this command in BeamMP chat to pair:</p>
           <div className="font-mono text-white bg-gray-800 px-3 py-2 rounded-lg inline-block select-all">
@@ -162,7 +167,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       )}
 
       {/* Game Features */}
-      {isGameConnected && (
+      {isGameConnected && userData && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-750 rounded-lg p-3 text-center">
@@ -178,13 +183,13 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
           </div>
 
           {/* Game Account Info */}
-          {inGameId && user && (
+          {inGameId && (
             <div className="bg-gray-750 rounded-lg p-4">
               <h4 className="text-white font-semibold mb-2">Linked Account</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Wallet:</span>
-                  <span className="text-white">{user.address}</span>
+                  <span className="text-white">{userData.walletAddress}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Player ID:</span>
@@ -200,9 +205,9 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
                   Sync Assets
                 </button>
               </div>
-              {user.ownedAssets.length > 0 && (
+              {userData.ownedAssets && userData.ownedAssets.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  {user.ownedAssets.map((asset: any) => (
+                  {userData.ownedAssets.map((asset: any) => (
                     <CarCard key={asset.id} car={asset} showBuyButton={false} />
                   ))}
                 </div>
@@ -213,7 +218,7 @@ const GameIntegrationPanel: React.FC<GameIntegrationPanelProps> = ({ user, token
       )}
 
       {/* Connection Instructions */}
-      {!isGameConnected && (
+      {!isGameConnected && !userData && (
         <div className="bg-gray-750 rounded-lg p-4">
           <h4 className="text-white font-semibold mb-2">How to Connect</h4>
           <ol className="text-sm text-gray-400 space-y-1">

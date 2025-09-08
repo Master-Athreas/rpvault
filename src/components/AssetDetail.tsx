@@ -1,16 +1,28 @@
-import React from 'react';
-import { ArrowLeft, Car, Zap, Shield, Gauge, Award, Clock } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { ArrowLeft, Car, Zap, Shield, Gauge, Award, Clock, Loader2 } from 'lucide-react';
 import { Car as CarType } from '../types';
-import { formatPrice } from '../utils/web3';
+import { formatPrice, formatNumber } from '../utils/web3';
 
 interface AssetDetailProps {
   asset: CarType;
   user: any;
   onBack: () => void;
   onBuy: (car: CarType) => void;
+  backButtonText?: string;
+  showListButton?: boolean;
+  onList?: (car: CarType) => void;
+  isListed?: boolean; // New prop
+  listingId?: string | null; // New prop
+  onCancelList?: (listingId: string) => void; // New prop
+  isListingLoading?: boolean; // New prop for loading state
+  isBuying?: boolean; // New prop for buy loading state
 }
 
-const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy }) => {
+const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, backButtonText, showListButton, onList, isListed, listingId, onCancelList, isListingLoading, isBuying }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
       case 'Legendary': return 'from-yellow-400 to-orange-500';
@@ -39,22 +51,27 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
           className="flex items-center space-x-2 text-gray-400 hover:text-white mb-8 transition-colors duration-200"
         >
           <ArrowLeft className="h-5 w-5" />
-          <span>Back to Marketplace</span>
+          <span>{backButtonText || 'Back to Marketplace'}</span>
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image Section */}
           <div className="space-y-6">
             <div className="relative">
-              <img
-                src={asset.image}
-                alt={asset.name}
-                className="w-full h-96 object-cover rounded-xl"
-              />
-              <div className={`absolute top-4 left-4 bg-gradient-to-r ${getRarityColor(asset.rarity)} text-white px-3 py-1 rounded-full font-semibold`}>
-                {asset.rarity}
+                <img
+                  src={asset.image}
+                  alt={asset.name}
+                  className="w-full h-96 object-cover rounded-xl"
+                />
+                <div className={`absolute top-4 left-4 bg-gradient-to-r ${getRarityColor(asset.rarity)} text-white px-3 py-1 rounded-full font-semibold`}>
+                  {asset.rarity}
+                </div>
+                {isListed && (
+                  <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full font-semibold">
+                    LISTED
+                  </div>
+                )}
               </div>
-            </div>
           </div>
 
           {/* Details Section */}
@@ -69,7 +86,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Current Price</p>
-                  <p className="text-3xl font-bold text-blue-400">{formatPrice(asset.price)}</p>
+                  <p className="text-3xl font-bold text-blue-400">{formatPrice(formatNumber(asset.price) as any, 'UNT')}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-400 text-sm">Category</p>
@@ -104,6 +121,24 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
               </div>
             )}
 
+            {/* Vehicle Details */}
+            {asset.details && Object.keys(asset.details).length > 0 && (
+              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Vehicle Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(asset.details).map(([key, value]) => {
+                    if (!value) return null;
+                    return (
+                      <div key={key}>
+                        <p className="text-gray-400 text-sm capitalize">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-white font-semibold">{value}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Transaction History */}
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
               <h3 className="text-xl font-bold text-white mb-4">Transaction History</h3>
@@ -127,21 +162,55 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy })
 
             {/* Action Buttons */}
             <div className="space-y-4">
-              {asset.forSale && (
+              {asset.forSale && user && user._id !== asset.owner && (
                 <button
                   onClick={() => onBuy(asset)}
-                  disabled={!user || user.balance < asset.price}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105"
+                  disabled={user.tokenBalance < asset.price || isBuying} // Disable when insufficient balance or buying
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
                 >
-                  {!user ? 'Connect Wallet to Buy' : 
-                   user.balance < asset.price ? 'Insufficient Balance' : 
-                   `Buy for ${formatPrice(asset.price)}`}
+                  {isBuying ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                      Buying...
+                    </>
+                  ) : user.tokenBalance < asset.price ? (
+                    "Insufficient Token Balance"
+                  ) : (
+                    `Buy for ${formatPrice(formatNumber(asset.price) as any, 'UNT')}`
+                  )}
                 </button>
               )}
-              
-              <button className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors duration-200">
-                Make Offer
-              </button>
+              {!asset.forSale && user && user._id !== asset.owner && (
+                <span className="w-full bg-green-600 text-white font-semibold py-4 rounded-xl text-center">Bought</span>
+              )}
+
+              {showListButton && (
+                isListed && listingId && onCancelList ? (
+                  <button
+                    onClick={() => onCancelList(listingId)}
+                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                    Cancel Listing
+                  </button>
+                ) : (
+                  onList && (
+                    <button
+                      onClick={() => onList(asset)}
+                      disabled={isListingLoading} // Disable when loading
+                      className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
+                    >
+                      {isListingLoading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                          Listing...
+                        </>
+                      ) : (
+                        "List Car for Sale"
+                      )}
+                    </button>
+                  )
+                )
+              )}
             </div>
           </div>
         </div>

@@ -42,8 +42,8 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
 
   useEffect(() => {
       const fetchTokenBalance = async () => {
-        if (user?.address) {
-          const token = await getTokenBalance(user.address);
+        if (user?.walletAddress) {
+          const token = await getTokenBalance(user.walletAddress);
           const symbol = await getTokenSymbol();
           setTokenBalance(token);
           setTokenSymbol(symbol);

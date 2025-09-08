@@ -19,14 +19,16 @@ interface GameIntegrationState {
   syncCode: string | null;
   inGameId: string | null;
   wallet: string | null;
+  userData: any | null;
 }
 
 interface GameIntegrationContextType extends GameIntegrationState {
-  connectGame: () => Promise<void>;
+  connectGame: (walletAddress: string) => Promise<void>;
   disconnectGame: () => void;
-  requestPairing: (wallet: string, balance: number) => Promise<void>; // ✅ updated
+  requestPairing: (wallet: string, balance: number) => Promise<void>;
   syncAssets: (wallet: string) => Promise<void>;
   setGameStatus: (s: GameStatus) => void;
+  fetchUserData: (walletAddress: string) => Promise<void>;
 }
 
 const defaultState: GameIntegrationState = {
@@ -35,6 +37,7 @@ const defaultState: GameIntegrationState = {
   syncCode: null,
   inGameId: null,
   wallet: null,
+  userData: null,
 };
 
 const GameIntegrationContext = createContext<
@@ -43,21 +46,23 @@ const GameIntegrationContext = createContext<
 
 export const GameIntegrationProvider = ({
   children,
+  connectedWalletAddress,
 }: {
   children: ReactNode;
+  connectedWalletAddress?: string;
 }) => {
-  const [state, setState] = useState<GameIntegrationState>(() => {
-    const stored = localStorage.getItem("gameIntegration");
-    return stored ? { ...defaultState, ...JSON.parse(stored) } : defaultState;
-  });
+  const [state, setState] = useState<GameIntegrationState>(defaultState);
 
   useEffect(() => {
-    localStorage.setItem("gameIntegration", JSON.stringify(state));
-  }, [state]);
+    if (connectedWalletAddress) {
+      fetchUserData(connectedWalletAddress);
+    }
+  }, [connectedWalletAddress]);
 
-  const connectGame = async () => {
-    setState((prev) => ({ ...prev, gameStatus: "connecting" }));
+  const connectGame = async (walletAddress: string) => {
+    setState((prev) => ({ ...prev, gameStatus: "connecting", wallet: walletAddress }));
     await new Promise((res) => setTimeout(res, 2000));
+    await fetchUserData(walletAddress);
     setState((prev) => ({
       ...prev,
       isGameConnected: true,
@@ -131,6 +136,7 @@ export const GameIntegrationProvider = ({
           gameStatus: "connected",
           inGameId: data.playerId,
         }));
+        fetchUserData(wallet);
         eventSource.close(); // Stop listening
       }
     };
@@ -149,6 +155,7 @@ export const GameIntegrationProvider = ({
   const syncAssets = async (wallet: string) => {
     setState((prev) => ({ ...prev, gameStatus: "syncing" }));
     try {
+      await fetchUserData(wallet);
       setState((prev) => ({ ...prev, gameStatus: "connected", wallet }));
     } catch (err) {
       console.error(err);
@@ -160,6 +167,32 @@ export const GameIntegrationProvider = ({
     setState((prev) => ({ ...prev, gameStatus: s }));
   };
 
+  const fetchUserData = async (walletAddress: string) => {
+    const apiUrl =
+      import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+    try {
+      const response = await fetch(`${apiUrl}/api/users/wallet/${walletAddress}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setState((prev) => ({
+            ...prev,
+            userData: data.user,
+            inGameId: data.user?.playerId || null,
+            isGameConnected: !!data.user?.playerId, // Set isGameConnected based on playerId presence
+          }));
+        } else {
+          setState((prev) => ({ ...prev, userData: null, inGameId: null, isGameConnected: false }));
+        }
+      } else {
+        setState((prev) => ({ ...prev, userData: null, inGameId: null, isGameConnected: false }));
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setState((prev) => ({ ...prev, userData: null, inGameId: null, isGameConnected: false }));
+    }
+  };
+
   return (
     <GameIntegrationContext.Provider
       value={{
@@ -169,6 +202,7 @@ export const GameIntegrationProvider = ({
         requestPairing,
         syncAssets,
         setGameStatus,
+        fetchUserData,
       }}
     >
       {children}

@@ -1,16 +1,20 @@
 import React from 'react';
-import { Car as CarIcon, Zap, Shield, Gauge } from 'lucide-react';
+import { Car as CarIcon, Zap, Shield, Gauge, Loader2 } from 'lucide-react';
 import { Car } from '../types';
-import { formatPrice } from '../utils/web3';
+import { formatPrice, formatNumber } from '../utils/web3';
 
 interface CarCardProps {
   car: Car;
   onBuy?: (car: Car) => void;
   onView?: (car: Car) => void;
   showBuyButton?: boolean;
+  isListed?: boolean; // New prop
+  showVehicleCode?: boolean; // New prop
+  isBuying?: boolean; // New prop for loading state
 }
 
-const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = true }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = true, isListed, showVehicleCode = true, isBuying }) => {
+  // const [isBought, setIsBought] = React.useState(false);
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
       case 'Legendary': return 'from-yellow-400 to-orange-500';
@@ -44,12 +48,17 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
         <div className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full">
           {getCategoryIcon()}
         </div>
+        {isListed && (
+          <div className="absolute bottom-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+            LISTED
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4">
         <h3 className="text-lg font-bold text-white mb-2">{car.name}</h3>
-        {car.vehicleCode && (
+        {showVehicleCode && car.vehicleCode && (
           <div className="mb-2">
             <p className="text-xs text-gray-400">VEHICLE CODE</p>
             <p className="text-sm font-mono text-cyan-400 bg-gray-900 px-2 py-1 rounded">{car.vehicleCode}</p>
@@ -76,7 +85,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
         {/* Price and Actions */}
         <div className="flex items-center justify-between">
           <div className="text-lg font-bold text-blue-400">
-            {formatPrice(car.price, 'UNT')}
+            {formatPrice(formatNumber(car.price) as any, 'UNT')}
           </div>
           <div className="flex space-x-2">
             <button
@@ -88,10 +97,21 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
             {showBuyButton && car.forSale && (
               <button
                 onClick={() => onBuy?.(car)}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm rounded-lg transition-all duration-200"
+                disabled={isBuying} // Disable when loading
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
               >
-                Buy Now
+                {isBuying ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                    Buying...
+                  </>
+                ) : (
+                  "Buy Now"
+                )}
               </button>
+            )}
+            {showBuyButton && !car.forSale && (
+              <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg">Bought</span>
             )}
           </div>
         </div>

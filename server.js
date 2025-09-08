@@ -59,6 +59,44 @@ const User = mongoose.model("User", userSchema);
 const Code = mongoose.model("Code", codeSchema);
 const Vehicle = mongoose.model("Vehicle", vehicleSchema);
 
+const listingSchema = new mongoose.Schema(
+  {
+    vehicle: { type: mongoose.Schema.Types.ObjectId, ref: "Vehicle", required: true },
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    price: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["active", "sold", "delisted"],
+      default: "active",
+    },
+  },
+  { timestamps: true }
+);
+
+const transactionSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["listing", "sale", "cancellation", "initial_purchase"],
+      required: true,
+    },
+    vehicle: { type: mongoose.Schema.Types.ObjectId, ref: "Vehicle", required: true },
+    listing: { type: mongoose.Schema.Types.ObjectId, ref: "Listing" }, // Optional
+    buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Optional
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Optional
+    amount: { type: Number }, // Optional
+    status: {
+      type: String,
+      enum: ["pending", "completed", "failed", "cancelled"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
+);
+
+const Listing = mongoose.model("Listing", listingSchema);
+const Transaction = mongoose.model("Transaction", transactionSchema);
+
 // In-memory store for SSE clients
 const sseClients = {
   beammp: [],
@@ -107,7 +145,7 @@ app.get("/api/sync-events/:code", (req, res) => {
   console.log(`Client ${clientId} connected for sync code ${code}`);
 
   // Send an initial "pending" status
-  res.write(`data: ${JSON.stringify({ status: "pending" })}`);
+  res.write(`data: ${JSON.stringify({ status: "pending" })}\n\n`);
 
   req.on("close", () => {
     sseClients.sync.delete(code);
@@ -118,7 +156,7 @@ app.get("/api/sync-events/:code", (req, res) => {
 // Function to send events to all BeamMP clients
 function sendEventsToAllBeamMP(data) {
   sseClients.beammp.forEach((client) =>
-    client.res.write(`data: ${JSON.stringify(data)}`)
+    client.res.write(`data: ${JSON.stringify(data)}\n\n`)
   );
 }
 
@@ -193,6 +231,15 @@ app.post("/api/purchase-vehicle", async (req, res) => {
     vehicle.purchaseStatus = "confirmed";
     vehicle.owner = user._id;
     await vehicle.save();
+
+    // Create a transaction for the initial purchase
+    await Transaction.create({
+        type: 'initial_purchase',
+        vehicle: vehicle._id,
+        buyer: user._id,
+        amount: vehicle.price,
+        status: 'completed'
+    });
 
     res.status(200).json({ success: true, vehicle });
   } catch (err) {
@@ -350,9 +397,7 @@ app.post("/api/verify-sync", async (req, res) => {
         `data: ${JSON.stringify({
           status: "completed",
           playerId: user.playerId,
-        })}
-
-`
+        })}\n\n`
       );
       client.res.end();
       sseClients.sync.delete(code);
@@ -394,6 +439,203 @@ app.get("/api/purchase-status", async (req, res) => {
   } catch (err) {
     res.status(500).json({ status: "failed", message: err.message });
   }
+});
+
+app.post("/api/check-ownership", async (req, res) => {
+  try {
+    const { playerId, model, config } = req.body;
+    if (!playerId || !model || !config) {
+      return res.status(400).json({ success: false, message: "Missing data" });
+    }
+
+    const user = await User.findOne({ playerId: playerId });
+    if (!user) {
+      return res.json({ success: true, isOwner: false });
+    }
+
+    const vehicle = await Vehicle.findOne({
+      owner: user._id,
+      model,
+      config,
+      purchaseStatus: "confirmed",
+    });
+    res.json({ success: true, isOwner: !!vehicle });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get("/api/users/wallet/:walletAddress", async (req, res) => {
+  try {
+    const user = await User.findOne({ walletAddress: req.params.walletAddress });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Listings
+app.post("/api/listings", async (req, res) => {
+  const { vehicleId, price, sellerId } = req.body;
+
+  if (!vehicleId || !price || !sellerId) {
+    return res.status(400).json({ success: false, message: "Missing required fields" });
+  }
+
+  try {
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found" });
+    }
+
+    const seller = await User.findById(sellerId);
+    if (!seller) {
+        return res.status(404).json({ success: false, message: "Seller not found" });
+    }
+
+    // Check if the vehicle is already listed
+    const existingListing = await Listing.findOne({ vehicle: vehicleId, status: "active" });
+    if (existingListing) {
+        return res.status(400).json({ success: false, message: "Vehicle is already listed for sale" });
+    }
+
+    const newListing = await Listing.create({
+      vehicle: vehicleId,
+      seller: sellerId,
+      price,
+    });
+
+    // Create a transaction for the listing
+    await Transaction.create({
+        type: 'listing',
+        vehicle: vehicleId,
+        seller: sellerId,
+        listing: newListing._id,
+        amount: price,
+        status: 'completed'
+    });
+
+    res.status(201).json({ success: true, listing: newListing });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get("/api/listings", async (req, res) => {
+  try {
+    const listings = await Listing.find({ status: "active" })
+      .populate("vehicle")
+      .populate("seller", "walletAddress playerId"); // Populate seller with only walletAddress and playerId
+
+    res.json({ success: true, listings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post("/api/listings/:id/buy", async (req, res) => {
+    const { buyerId } = req.body;
+    const { id: listingId } = req.params;
+
+    if (!buyerId) {
+        return res.status(400).json({ success: false, message: "Missing buyerId" });
+    }
+
+    try {
+        const listing = await Listing.findById(listingId).populate('seller').populate('vehicle');
+        if (!listing || listing.status !== 'active') {
+            return res.status(404).json({ success: false, message: "Listing not found or not active" });
+        }
+
+        const buyer = await User.findById(buyerId);
+        if (!buyer) {
+            return res.status(404).json({ success: false, message: "Buyer not found" });
+        }
+
+        // For simplicity, we are not handling payment here.
+        // In a real application, you would integrate with a payment gateway or use a smart contract.
+
+        // 1. Create a transaction
+        const newTransaction = await Transaction.create({
+            type: 'sale',
+            vehicle: listing.vehicle._id,
+            listing: listingId,
+            buyer: buyerId,
+            seller: listing.seller._id,
+            amount: listing.price,
+            status: 'completed' // Assuming payment is instant
+        });
+
+        // 2. Update listing status
+        listing.status = 'sold';
+        await listing.save();
+
+        // 3. Update vehicle owner
+        const vehicle = listing.vehicle;
+        vehicle.owner = buyerId;
+        await vehicle.save();
+
+
+        res.status(200).json({ success: true, transaction: newTransaction });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.delete("/api/listings/:id", async (req, res) => {
+    const { id: listingId } = req.params;
+    const { userId } = req.body; // The user who is cancelling the listing
+
+    try {
+        const listing = await Listing.findById(listingId).populate('seller');
+        if (!listing || listing.status !== 'active') {
+            return res.status(404).json({ success: false, message: "Listing not found or not active" });
+        }
+
+        if (listing.seller._id.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "You are not the seller of this listing" });
+        }
+
+        listing.status = 'delisted';
+        await listing.save();
+
+        // Create a transaction for the cancellation
+        await Transaction.create({
+            type: 'cancellation',
+            vehicle: listing.vehicle,
+            seller: userId,
+            listing: listingId,
+            status: 'completed'
+        });
+
+        res.status(200).json({ success: true, message: "Listing cancelled" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Transactions
+app.get("/api/transactions/user/:userId", async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const transactions = await Transaction.find({
+            $or: [{ buyer: userId }, { seller: userId }]
+        }).populate({
+            path: 'listing',
+            populate: {
+                path: 'vehicle'
+            }
+        }).populate('buyer', 'walletAddress playerId')
+          .populate('seller', 'walletAddress playerId');
+
+        res.json({ success: true, transactions });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
 app.listen(process.env.PORT, () => {
