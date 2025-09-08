@@ -276,7 +276,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
       <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-pink-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            RaceVault <span className="text-blue-400">Marketplace</span>
+            Midnight+ <span className="text-blue-400">Marketplace</span>
           </h1>
           <p className="text-xl text-gray-300 mb-8">
             Discover, collect, and trade the most exclusive racing NFTs

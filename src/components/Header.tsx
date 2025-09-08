@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ user, setUser }) => {
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg group-hover:scale-110 transition-transform duration-200">
               <Zap className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">RaceVault</span>
+            <span className="text-xl font-bold text-white">Midnight+</span>
           </Link>
 
           {/* Navigation */}
