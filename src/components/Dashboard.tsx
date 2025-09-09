@@ -51,6 +51,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       const vehiclesResponse = await fetch(`${apiUrl}/api/player-vehicles/${playerId}`);
       const vehiclesData = await vehiclesResponse.json();
 
+      console.log("vehiclesData", vehiclesData);
+
       // Fetch active listings
       const listingsResponse = await fetch(`${apiUrl}/api/listings`);
       const listingsData = await listingsResponse.json();
@@ -98,18 +100,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           return {
             id: v._id,
             name: `${v.model || 'Unknown'} ${v.niceName || ''}`.trim(),
-            description: `Configuration: ${v.config || 'Stock'}`,
+            description: v.stats?.Description || `Configuration: ${v.config || 'Stock'}`,
             price: v.price || 0,
             vehicleCode: v.vehicleCode,
             category: 'car',
             rarity: 'Common',
             image: `https://placehold.co/400x300.png?text=${v.model || 'Car'}`,
             specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 },
-            owner: '',
+            owner: userData?._id || '',
             forSale: false,
             details: details,
             isListed: !!listing, // Add isListed property
             listingId: listing ? listing._id : null, // Add listingId property
+            stats: v.stats,
           };
         });
         setOwnedVehicles(formattedVehicles);
@@ -123,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userData]);
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
@@ -386,8 +389,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         backButtonText="Back to Dashboard"
         showListButton={true}
         onList={handleListCar}
-        isListed={selectedAsset.isListed}
-        listingId={selectedAsset.listingId}
         onCancelList={handleCancelListing}
         isListingLoading={isListingLoading}
       />

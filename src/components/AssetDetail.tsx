@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ArrowLeft, Car, Zap, Shield, Gauge, Award, Clock, Loader2 } from 'lucide-react';
 import { Car as CarType } from '../types';
 import { formatPrice, formatNumber } from '../utils/web3';
+import RadialProgress from './RadialProgress';
 
 interface AssetDetailProps {
   asset: CarType;
@@ -11,17 +12,43 @@ interface AssetDetailProps {
   backButtonText?: string;
   showListButton?: boolean;
   onList?: (car: CarType) => void;
-  isListed?: boolean; // New prop
-  listingId?: string | null; // New prop
   onCancelList?: (listingId: string) => void; // New prop
   isListingLoading?: boolean; // New prop for loading state
   isBuying?: boolean; // New prop for buy loading state
 }
 
-const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, backButtonText, showListButton, onList, isListed, listingId, onCancelList, isListingLoading, isBuying }) => {
+const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, backButtonText, showListButton, onList, onCancelList, isListingLoading, isBuying }) => {
+  const { isListed, listingId } = asset;
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const getCalculatedSpecs = () => {
+    if (!asset.stats) {
+      return asset.specs;
+    }
+
+    const speed = asset.stats['Top Speed'] ? (asset.stats['Top Speed'] / 400) * 100 : 0;
+    const acceleration = asset.stats['0-60 mph'] ? (1 - (asset.stats['0-60 mph'] / 15)) * 100 : 0;
+    
+    const brakingG = asset.stats['Braking G'] || 0;
+    const weight = asset.stats['Weight'] || 0;
+
+    const brakingScore = (brakingG / 1.5) * 50;
+    const weightScore = (1 - (weight / 2500)) * 50;
+    const handling = brakingScore + weightScore;
+
+    const durability = (weight / 2500) * 100;
+
+    return {
+      speed: Math.min(100, Math.max(0, speed)),
+      acceleration: Math.min(100, Math.max(0, acceleration)),
+      handling: Math.min(100, Math.max(0, handling)),
+      durability: Math.min(100, Math.max(0, durability)),
+    };
+  };
+
+  const calculatedSpecs = getCalculatedSpecs();
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -78,7 +105,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
           <div className="space-y-8">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">{asset.name}</h1>
-              <p className="text-gray-400 text-lg">{asset.description}</p>
+              <p className="text-gray-400 text-lg">{asset.stats?.Description || asset.description}</p>
             </div>
 
             {/* Price */}
@@ -99,24 +126,93 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
             {(asset.category === 'car' || asset.category === 'modification') && (
               <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-white mb-4">Specifications</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(asset.specs).map(([stat, value]) => (
-                    <div key={stat} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {getStatIcon(stat)}
-                          <span className="text-gray-400 capitalize">{stat}</span>
-                        </div>
-                        <span className="text-white font-semibold">{value}</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <RadialProgress value={calculatedSpecs.speed} label="Speed" icon={<Gauge className="h-8 w-8" />} />
+                  <RadialProgress value={calculatedSpecs.acceleration} label="Acceleration" icon={<Zap className="h-8 w-8" />} />
+                  <RadialProgress value={calculatedSpecs.handling} label="Handling" icon={<Car className="h-8 w-8" />} />
+                  <RadialProgress value={calculatedSpecs.durability} label="Durability" icon={<Shield className="h-8 w-8" />} />
+                </div>
+                <div className="mt-6 border-t border-gray-700 pt-6">
+                  <h4 className="text-lg font-bold text-white mb-4">Additional Stats</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Performance */}
+                    <div className="space-y-4">
+                      <h5 className="text-md font-semibold text-blue-400">Performance</h5>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">0-100 km/h</span>
+                        <span className="text-white">{asset.stats?.['0-100 km/h']?.toFixed(2) || 'N/A'} s</span>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${value}%` }}
-                        />
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">0-60 mph</span>
+                        <span className="text-white">{asset.stats?.['0-60 mph']?.toFixed(2) || 'N/A'} s</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Top Speed</span>
+                        <span className="text-white">{asset.stats?.['Top Speed']?.toFixed(2) || 'N/A'} km/h</span>
                       </div>
                     </div>
-                  ))}
+
+                    {/* Engine & Drivetrain */}
+                    <div className="space-y-4">
+                      <h5 className="text-md font-semibold text-blue-400">Engine & Drivetrain</h5>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Power</span>
+                        <span className="text-white">{asset.stats?.Power || 'N/A'} HP</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Torque</span>
+                        <span className="text-white">{asset.stats?.Torque || 'N/A'} Nm</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Drivetrain</span>
+                        <span className="text-white">{asset.stats?.Drivetrain || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Transmission</span>
+                        <span className="text-white">{asset.stats?.Transmission || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    {/* Dimensions & Misc */}
+                    <div className="space-y-4">
+                        <h5 className="text-md font-semibold text-blue-400">Dimensions & Misc</h5>
+                        <div className="flex justify-between">
+                            <span className="text-gray-400">Weight</span>
+                            <span className="text-white">{asset.stats?.Weight || 'N/A'} kg</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-400">Weight/Power</span>
+                            <span className="text-white">{asset.stats?.['Weight/Power']?.toFixed(2) || 'N/A'} kg/HP</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-400">Off-Road Score</span>
+                            <span className="text-white">{asset.stats?.['Off-Road Score'] || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-400">Fuel Type</span>
+                            <span className="text-white">{asset.stats?.['Fuel Type'] || 'N/A'}</span>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Drag Times */}
+            {asset.stats && asset.stats['Drag Times'] && (
+              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Drag Times</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {Object.entries(asset.stats['Drag Times']).map(([key, value]) => {
+                    if (typeof value !== 'string' && typeof value !== 'number') return null;
+                    return (
+                      <div key={key} className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
+                        <p className="text-gray-400 text-sm capitalize">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-white font-semibold text-lg">{typeof value === 'number' ? value.toFixed(3) : value}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -43,7 +43,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
         const formattedListings: CarType[] = data.listings.map((listing: any) => ({
           id: listing._id,
           name: `${listing.vehicle.model} ${listing.vehicle.niceName || ''}`.trim(),
-          description: `Listed by ${listing.seller.playerId || 'Unknown'}`,
+          description: listing.vehicle.stats?.Description || `Listed by ${listing.seller.playerId || 'Unknown'}`,
           price: listing.price,
           vehicleCode: listing.vehicle.vehicleCode,
           category: 'car', // Assuming all listings are cars for now
@@ -55,6 +55,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
           forSale: listing.status === 'active',
           isListed: true, // Listings are always listed
           listingId: listing._id,
+          stats: listing.vehicle.stats,
         }));
 
         setListings(formattedListings);

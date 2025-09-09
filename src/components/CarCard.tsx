@@ -64,21 +64,39 @@ const CarCard: React.FC<CarCardProps> = ({ car, onBuy, onView, showBuyButton = t
             <p className="text-sm font-mono text-cyan-400 bg-gray-900 px-2 py-1 rounded">{car.vehicleCode}</p>
           </div>
         )}
-        <p className="text-gray-400 text-sm mb-3 line-clamp-2">{car.description}</p>
+        <p className="text-gray-400 text-sm mb-3 line-clamp-2">{car.stats?.Description || car.description}</p>
         
-        {/* Specs for cars and modifications */}
-        {(car.category === 'car' || car.category === 'modification') && (
+        {/* Stats for cars */}
+        {car.stats && (
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="flex items-center space-x-1 text-sm">
-              <Gauge className="h-3 w-3 text-blue-400" />
-              <span className="text-gray-400">Speed:</span>
-              <span className="text-white">{car.specs.speed}</span>
-            </div>
-            <div className="flex items-center space-x-1 text-sm">
-              <Zap className="h-3 w-3 text-yellow-400" />
-              <span className="text-gray-400">Accel:</span>
-              <span className="text-white">{car.specs.acceleration}</span>
-            </div>
+            {car.stats.Power && (
+              <div className="flex items-center space-x-1 text-sm">
+                <Zap className="h-3 w-3 text-yellow-400" />
+                <span className="text-gray-400">Power:</span>
+                <span className="text-white">{car.stats.Power} HP</span>
+              </div>
+            )}
+            {car.stats['Top Speed'] && (
+              <div className="flex items-center space-x-1 text-sm">
+                <Gauge className="h-3 w-3 text-blue-400" />
+                <span className="text-gray-400">Top Speed:</span>
+                <span className="text-white">{car.stats['Top Speed'].toFixed(2)} km/h</span>
+              </div>
+            )}
+            {car.stats['0-60 mph'] && (
+              <div className="flex items-center space-x-1 text-sm">
+                <Zap className="h-3 w-3 text-green-400" />
+                <span className="text-gray-400">0-60 mph:</span>
+                <span className="text-white">{car.stats['0-60 mph']}s</span>
+              </div>
+            )}
+            {car.stats.Drivetrain && (
+              <div className="flex items-center space-x-1 text-sm">
+                <CarIcon className="h-3 w-3 text-purple-400" />
+                <span className="text-gray-400">Drivetrain:</span>
+                <span className="text-white">{car.stats.Drivetrain}</span>
+              </div>
+            )}
           </div>
         )}
 
