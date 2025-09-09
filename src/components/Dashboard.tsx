@@ -162,8 +162,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         }
         const data = await response.json();
         if (data.success) {
+          const transactionsWithVehicleData = await Promise.all(
+            data.transactions.map(async (transaction: any) => {
+              if (transaction.type === 'initial_purchase' && !transaction.vehicle && transaction.vehicleId) {
+                const vehicleResponse = await fetch(`${apiUrl}/api/vehicle/${transaction.vehicleId}`);
+                const vehicleData = await vehicleResponse.json();
+                if (vehicleData.success) {
+                  return { ...transaction, vehicle: vehicleData.vehicle };
+                }
+              }
+              return transaction;
+            })
+          );
+
           // Sort transactions by createdAt in descending order
-          const sortedTransactions = data.transactions.sort((a: any, b: any) => {
+          const sortedTransactions = transactionsWithVehicleData.sort((a: any, b: any) => {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           setTransactions(sortedTransactions);
@@ -582,67 +595,82 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <p>Error: {errorTransactions}</p>
                 <p>Failed to load transaction history. Please try again later.</p>
               </div>
-            ) : transactions.length > 0 ? (
+            ) : transactions.length > 0 && ownedVehicles.length > 0 ? (
               <div className="divide-y divide-gray-700">
-                {transactions.map((transaction) => (
-                  <div
-                    key={transaction._id} // Assuming _id is available from MongoDB
-                    className="p-6 hover:bg-gray-750 transition-colors duration-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`p-2 rounded-full ${
-                            transaction.type === "initial_purchase"
-                              ? "bg-blue-500/20 text-blue-400"
-                              : transaction.type === "sale"
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-purple-500/20 text-purple-400"
-                          }`}
-                        >
-                          {transaction.buyer?._id === userData._id ? (
-                            <ArrowDownCircle className="h-4 w-4" />
-                          ) : transaction.seller?._id === userData._id && transaction.type === "sale" ? (
-                            <ArrowUpCircle className="h-4 w-4" />
-                          ) : (
-                            <Award className="h-4 w-4" />
+                {transactions.map((transaction) => {
+                  let vehicleModel = 'N/A';
+                  if (transaction.listing && transaction.listing.vehicle) {
+                    vehicleModel = transaction.listing.vehicle.model;
+                  } else if (transaction.vehicle) {
+                    vehicleModel = transaction.vehicle.model;
+                  } else if (transaction.vehicleId) {
+                    const ownedVehicle = ownedVehicles.find(v => v.id === transaction.vehicleId);
+                    if (ownedVehicle) {
+                      vehicleModel = ownedVehicle.name;
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={transaction._id}
+                      className="p-6 hover:bg-gray-750 transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div
+                            className={`p-2 rounded-full ${
+                              transaction.type === "initial_purchase"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : transaction.type === "sale"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-purple-500/20 text-purple-400"
+                            }`}
+                          >
+                            {transaction.buyer?._id === userData._id ? (
+                              <ArrowDownCircle className="h-4 w-4" />
+                            ) : transaction.seller?._id === userData._id && transaction.type === "sale" ? (
+                              <ArrowUpCircle className="h-4 w-4" />
+                            ) : (
+                              <Award className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-white font-semibold capitalize">
+                              {transaction.type === 'initial_purchase' ? 'Bought spawned car' :
+                               transaction.buyer?._id === userData._id ? "Bought" :
+                               transaction.seller?._id === userData._id && transaction.type === "sale" ? "Sold" :
+                               transaction.type === "cancellation" ? "Cancel Listing" : transaction.type.replace(/_/g, ' ')} - {vehicleModel}
+                            </p>
+                            <p className="text-gray-400 text-sm flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {new Date(transaction.createdAt).toLocaleDateString()} {new Date(transaction.createdAt).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {transaction.type === "initial_purchase" && transaction.buyer?._id === userData._id && (
+                            <p className="font-semibold text-red-400">
+                              -{formatPrice(transaction.amount, "UNT")}
+                            </p>
+                          )}
+                          {transaction.type === "sale" && transaction.seller?._id === userData._id && (
+                            <p className="font-semibold text-green-400">
+                              +{formatPrice(transaction.amount, "UNT")}
+                            </p>
+                          )}
+                          {transaction.type === "sale" && transaction.buyer?._id === userData._id && (
+                            <p className="font-semibold text-green-400">
+                              -{formatPrice(transaction.amount, "UNT")}
+                            </p>
+                          )}
+                          {(transaction.type === "listing" || transaction.type === "cancellation") && (
+                            <p className="font-semibold text-gray-400"></p>
                           )}
                         </div>
-                        <div>
-                          <p className="text-white font-semibold capitalize">
-                            {transaction.buyer?._id === userData._id ? "Bought" :
-                             transaction.seller?._id === userData._id && transaction.type === "sale" ? "Sold" :
-                             transaction.type === "cancellation" ? "Cancel Listing" : transaction.type.replace(/_/g, ' ')} - {transaction.listing?.vehicle?.model || transaction.vehicle?.model || 'N/A'}
-                          </p>
-                          <p className="text-gray-400 text-sm flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {new Date(transaction.createdAt).toLocaleDateString()} {new Date(transaction.createdAt).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {transaction.type === "initial_purchase" && transaction.buyer?._id === userData._id && (
-                          <p className="font-semibold text-red-400">
-                            -{formatPrice(transaction.amount, "UNT")}
-                          </p>
-                        )}
-                        {transaction.type === "sale" && transaction.seller?._id === userData._id && (
-                          <p className="font-semibold text-green-400">
-                            +{formatPrice(transaction.amount, "UNT")}
-                          </p>
-                        )}
-                        {transaction.type === "sale" && transaction.buyer?._id === userData._id && (
-                          <p className="font-semibold text-green-400">
-                            -{formatPrice(transaction.amount, "UNT")}
-                          </p>
-                        )}
-                        {(transaction.type === "listing" || transaction.type === "cancellation") && (
-                          <p className="font-semibold text-gray-400"></p>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-16">

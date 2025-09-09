@@ -236,7 +236,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
             )}
 
             {/* Transaction History */}
-            <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+            {/* <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
               <h3 className="text-xl font-bold text-white mb-4">Transaction History</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b border-gray-700">
@@ -254,7 +254,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
                   <span className="text-white">1 week ago</span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Action Buttons */}
             <div className="space-y-4">
