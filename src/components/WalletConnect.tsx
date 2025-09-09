@@ -51,8 +51,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
           setUser({
             walletAddress: address,
             username: `Player_${address.slice(-4)}`,
-            balance: formatNumber(balance),
-            tokenBalance: formatNumber(token),
+            balance: balance,
+            tokenBalance: token,
             tokenSymbol: symbol,
             ownedAssets: [],
             _id: null, // Indicate no backend ID yet
@@ -103,8 +103,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
         setUser({
           walletAddress: address,
           username: `Player_${address.slice(-4)}`,
-          balance: formatNumber(balance),
-          tokenBalance: formatNumber(token),
+          balance: balance,
+          tokenBalance: token,
           tokenSymbol: symbol,
           ownedAssets: [],
           _id: null, // Indicate no backend ID yet
@@ -129,8 +129,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ user, setUser }) => {
         setUser({
           walletAddress: address,
           username: `Player_${address.slice(-4)}`,
-          balance: formatNumber(balance),
-          tokenBalance: formatNumber(token),
+          balance: balance,
+          tokenBalance: token,
           tokenSymbol: symbol,
           ownedAssets: [],
           _id: null, // Indicate no backend ID yet

@@ -97,7 +97,7 @@ export const GameIntegrationProvider = ({
       const response = await fetch(`${apiUrl}/api/init-sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, wallet, balance: Number(balance) }),
+        body: JSON.stringify({ code, wallet, balance }),
       });
 
       const result = await response.json();
