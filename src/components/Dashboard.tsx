@@ -15,11 +15,10 @@ import {
 import CarCard from "./CarCard";
 import LiveTransactionFeed from "./LiveTransactionFeed";
 import { LiveGameTransaction, Car as CarType } from "../types";
-import { formatPrice, getTokenBalance, sendToken } from "../utils/web3";
+import { formatNumber, formatPrice, getTokenBalance, sendToken } from "../utils/web3";
 import GameIntegrationPanel from "./GameIntegrationPanel";
 import AssetDetail from "./AssetDetail";
 import { useGameIntegration } from "../context/GameIntegrationContext";
-
 
 interface DashboardProps {
   user: any;
@@ -39,94 +38,114 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [ownedVehicles, setOwnedVehicles] = useState<CarType[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]); // New state for transactions
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false); // New loading state
-  const [errorTransactions, setErrorTransactions] = useState<string | null>(null); // New error state
+  const [errorTransactions, setErrorTransactions] = useState<string | null>(
+    null
+  ); // New error state
 
-  const fetchPlayerVehicles = useCallback(async (playerId: string) => {
-    setIsLoading(true);
-    try {
-      const apiUrl =
-        import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+  const fetchPlayerVehicles = useCallback(
+    async (playerId: string) => {
+      setIsLoading(true);
+      try {
+        const apiUrl =
+          import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
 
-      // Fetch owned vehicles
-      const vehiclesResponse = await fetch(`${apiUrl}/api/player-vehicles/${playerId}`);
-      const vehiclesData = await vehiclesResponse.json();
+        // Fetch owned vehicles
+        const vehiclesResponse = await fetch(
+          `${apiUrl}/api/player-vehicles/${playerId}`
+        );
+        const vehiclesData = await vehiclesResponse.json();
 
-      console.log("vehiclesData", vehiclesData);
+        console.log("vehiclesData", vehiclesData);
 
-      // Fetch active listings
-      const listingsResponse = await fetch(`${apiUrl}/api/listings`);
-      const listingsData = await listingsResponse.json();
+        // Fetch active listings
+        const listingsResponse = await fetch(`${apiUrl}/api/listings`);
+        const listingsData = await listingsResponse.json();
 
-      if (vehiclesData.success && listingsData.success) {
-        const activeListings = listingsData.listings.filter((l: any) => l.status === 'active');
+        if (vehiclesData.success && listingsData.success) {
+          const activeListings = listingsData.listings.filter(
+            (l: any) => l.status === "active"
+          );
 
-        const formattedVehicles = vehiclesData.vehicles.map((v: any) => {
-          let details = {};
-          if (v.configJson) {
-            try {
-              const config = JSON.parse(v.configJson);
-              const parts = config.parts || {};
-              const vars = config.vars || {};
-              const model = config.model || v.model;
+          const formattedVehicles = vehiclesData.vehicles.map((v: any) => {
+            let details = {};
+            if (v.configJson) {
+              try {
+                const config = JSON.parse(v.configJson);
+                const parts = config.parts || {};
+                const vars = config.vars || {};
+                const model = config.model || v.model;
 
-              if (model) {
-                details = {
-                  engine: parts[`${model}_engine`],
-                  transmission: parts[`${model}_transmission`],
-                  suspension_F: parts[`${model}_suspension_F`],
-                  suspension_R: parts[`${model}_suspension_R`],
-                  revLimiterRPM: vars.$revLimiterRPM,
-                };
-              } else {
-                const findPart = (suffix: string) => {
-                  const key = Object.keys(parts).find(k => k.endsWith(suffix));
-                  return key ? parts[key] : undefined;
+                if (model) {
+                  details = {
+                    engine: parts[`${model}_engine`],
+                    transmission: parts[`${model}_transmission`],
+                    suspension_F: parts[`${model}_suspension_F`],
+                    suspension_R: parts[`${model}_suspension_R`],
+                    revLimiterRPM: vars.$revLimiterRPM,
+                  };
+                } else {
+                  const findPart = (suffix: string) => {
+                    const key = Object.keys(parts).find((k) =>
+                      k.endsWith(suffix)
+                    );
+                    return key ? parts[key] : undefined;
+                  };
+                  details = {
+                    engine: findPart("_engine"),
+                    transmission: findPart("_transmission"),
+                    suspension_F: findPart("_suspension_F"),
+                    suspension_R: findPart("_suspension_R"),
+                    revLimiterRPM: vars.$revLimiterRPM,
+                  };
                 }
-                details = {
-                  engine: findPart('_engine'),
-                  transmission: findPart('_transmission'),
-                  suspension_F: findPart('_suspension_F'),
-                  suspension_R: findPart('_suspension_R'),
-                  revLimiterRPM: vars.$revLimiterRPM,
-                };
+              } catch (e) {
+                console.error("Error parsing configJson", e);
               }
-            } catch (e) {
-              console.error("Error parsing configJson", e);
             }
-          }
 
-          const listing = activeListings.find((l: any) => l.vehicle._id === v._id);
+            const listing = activeListings.find(
+              (l: any) => l.vehicle._id === v._id
+            );
 
-          return {
-            id: v._id,
-            name: `${v.model || 'Unknown'} ${v.niceName || ''}`.trim(),
-            description: v.stats?.Description || `Configuration: ${v.config || 'Stock'}`,
-            price: v.price || 0,
-            vehicleCode: v.vehicleCode,
-            category: 'car',
-            rarity: 'Common',
-            image: `https://placehold.co/400x300.png?text=${v.model || 'Car'}`,
-            specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 },
-            owner: userData?._id || '',
-            forSale: false,
-            details: details,
-            isListed: !!listing, // Add isListed property
-            listingId: listing ? listing._id : null, // Add listingId property
-            stats: v.stats,
-          };
-        });
-        setOwnedVehicles(formattedVehicles);
-      } else {
-        console.error("Failed to fetch vehicles or listings:", vehiclesData.message || listingsData.message);
+            return {
+              id: v._id,
+              name: `${v.model || "Unknown"} ${v.niceName || ""}`.trim(),
+              description:
+                v.stats?.Description || `Configuration: ${v.config || "Stock"}`,
+              price: v.price || 0,
+              vehicleCode: v.vehicleCode,
+              category: "car",
+              rarity: "Common",
+              image: `https://placehold.co/400x300.png?text=${
+                v.model || "Car"
+              }`,
+              specs: { speed: 0, acceleration: 0, handling: 0, durability: 0 },
+              owner: userData?._id || "",
+              forSale: false,
+              details: details,
+              isListed: !!listing, // Add isListed property
+              listingId: listing ? listing._id : null, // Add listingId property
+              stats: v.stats,
+              modifications: v.modifications || [],
+            };
+          });
+          setOwnedVehicles(formattedVehicles);
+        } else {
+          console.error(
+            "Failed to fetch vehicles or listings:",
+            vehiclesData.message || listingsData.message
+          );
+          setOwnedVehicles([]);
+        }
+      } catch (error) {
+        console.error("Error fetching vehicles or listings:", error);
         setOwnedVehicles([]);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching vehicles or listings:", error);
-      setOwnedVehicles([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userData]);
+    },
+    [userData]
+  );
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
@@ -147,49 +166,60 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     }
   }, [user, inGameId, fetchPlayerVehicles]);
 
-
   const fetchTransactions = async () => {
-      if (!userData?._id) return; // Only fetch if userId is available
+    if (!userData?._id) return; // Only fetch if userId is available
 
-      setIsLoadingTransactions(true);
-      setErrorTransactions(null);
-      try {
-        const apiUrl =
-          import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
-        const response = await fetch(`${apiUrl}/api/transactions/user/${userData._id}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.success) {
-          const transactionsWithVehicleData = await Promise.all(
-            data.transactions.map(async (transaction: any) => {
-              if (transaction.type === 'initial_purchase' && !transaction.vehicle && transaction.vehicleId) {
-                const vehicleResponse = await fetch(`${apiUrl}/api/vehicle/${transaction.vehicleId}`);
-                const vehicleData = await vehicleResponse.json();
-                if (vehicleData.success) {
-                  return { ...transaction, vehicle: vehicleData.vehicle };
-                }
-              }
-              return transaction;
-            })
-          );
-
-          // Sort transactions by createdAt in descending order
-          const sortedTransactions = transactionsWithVehicleData.sort((a: any, b: any) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-          setTransactions(sortedTransactions);
-        } else {
-          setErrorTransactions(data.message || "Failed to fetch transactions");
-        }
-      } catch (error: any) {
-        console.error("Error fetching transactions:", error);
-        setErrorTransactions(error.message || "An unknown error occurred");
-      } finally {
-        setIsLoadingTransactions(false);
+    setIsLoadingTransactions(true);
+    setErrorTransactions(null);
+    try {
+      const apiUrl =
+        import.meta.env.VITE_APP_API_URL || "https://racevault.onrender.com";
+      const response = await fetch(
+        `${apiUrl}/api/transactions/user/${userData._id}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      if (data.success) {
+        const transactionsWithVehicleData = await Promise.all(
+          data.transactions.map(async (transaction: any) => {
+            if (
+              transaction.type === "initial_purchase" &&
+              !transaction.vehicle &&
+              transaction.vehicleId
+            ) {
+              const vehicleResponse = await fetch(
+                `${apiUrl}/api/vehicle/${transaction.vehicleId}`
+              );
+              const vehicleData = await vehicleResponse.json();
+              if (vehicleData.success) {
+                return { ...transaction, vehicle: vehicleData.vehicle };
+              }
+            }
+            return transaction;
+          })
+        );
+
+        // Sort transactions by createdAt in descending order
+        const sortedTransactions = transactionsWithVehicleData.sort(
+          (a: any, b: any) => {
+            return (
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          }
+        );
+        setTransactions(sortedTransactions);
+      } else {
+        setErrorTransactions(data.message || "Failed to fetch transactions");
+      }
+    } catch (error: any) {
+      console.error("Error fetching transactions:", error);
+      setErrorTransactions(error.message || "An unknown error occurred");
+    } finally {
+      setIsLoadingTransactions(false);
+    }
+  };
 
   useEffect(() => {
     fetchTransactions();
@@ -229,27 +259,53 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           const apiUrl =
             import.meta.env.VITE_APP_API_URL ||
             "https://racevault.onrender.com";
-          const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              vehicleCode: transaction.vehicleCode,
-              playerId: inGameId,
-            }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(
-              `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update shortly.`
-            );
-            fetchPlayerVehicles(inGameId);
+
+          if (
+            transaction.type === "vehicle_edit_request" &&
+            transaction.modification
+          ) {
+            const response = await fetch(`${apiUrl}/api/car-edit-confirm`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                modId: transaction.modification.modId,
+                vehicleCode: transaction.vehicleCode,
+              }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert(
+                `Modification successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update shortly.`
+              );
+              fetchPlayerVehicles(inGameId);
+            } else {
+              alert(
+                `On-chain TX succeeded, but backend update failed: ${result.message}`
+              );
+            }
           } else {
-            alert(
-              `On-chain TX succeeded, but backend update failed: ${result.message}`
-            );
+            const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                vehicleCode: transaction.vehicleCode,
+                playerId: inGameId,
+              }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert(
+                `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update shortly.`
+              );
+              fetchPlayerVehicles(inGameId);
+            } else {
+              alert(
+                `On-chain TX succeeded, but backend update failed: ${result.message}`
+              );
+            }
           }
         } catch (apiError) {
-          console.error("Error calling purchase-vehicle API:", apiError);
+          console.error("Error calling API:", apiError);
           alert("On-chain TX succeeded, but the final API call failed.");
         }
 
@@ -285,10 +341,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     (total, asset) => total + asset.price,
     0
   );
-  const categoryStats = ownedVehicles.reduce((stats: any, asset: any) => {
-    stats[asset.category] = (stats[asset.category] || 0) + 1;
-    return stats;
-  }, {});
+  const categoryStats = ownedVehicles.reduce(
+    (stats: any, asset: any) => {
+      if (asset.category === "car") {
+        stats.car = (stats.car || 0) + 1;
+        if (asset.modifications) {
+          stats.modification =
+            (stats.modification || 0) +
+            asset.modifications.filter(
+              (mod: any) => mod.status === "confirmed"
+            ).length;
+        }
+      } else {
+        stats[asset.category] = (stats[asset.category] || 0) + 1;
+      }
+      return stats;
+    },
+    { car: 0, modification: 0, property: 0 }
+  );
 
   const handleBuy = (car: CarType) => {
     // Since this is the dashboard, we don't need to implement buying functionality here
@@ -298,7 +368,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   const handleListCar = async (car: CarType) => {
     if (!userData || !userData._id) {
-      alert("User data not available. Please connect your wallet and sync your game.");
+      alert(
+        "User data not available. Please connect your wallet and sync your game."
+      );
       return;
     }
 
@@ -332,7 +404,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         // Update selectedAsset directly
         setSelectedAsset((prevAsset) => {
           if (!prevAsset) return null;
-          return { ...prevAsset, isListed: true, listingId: result.listing._id };
+          return {
+            ...prevAsset,
+            isListed: true,
+            listingId: result.listing._id,
+          };
         });
         // Re-fetch all vehicles to ensure the main list is updated
         if (inGameId) {
@@ -340,7 +416,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         }
         fetchTransactions(); // Re-fetch transactions
       } else {
-        alert(`Failed to list ${car.name} for sale: ${result.message || "Unknown error"}`);
+        alert(
+          `Failed to list ${car.name} for sale: ${
+            result.message || "Unknown error"
+          }`
+        );
       }
     } catch (error) {
       console.error("Error listing car for sale:", error);
@@ -352,7 +432,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   const handleCancelListing = async (listingId: string) => {
     if (!userData || !userData._id) {
-      alert("User data not available. Please connect your wallet and sync your game.");
+      alert(
+        "User data not available. Please connect your wallet and sync your game."
+      );
       return;
     }
 
@@ -471,7 +553,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               <div>
                 <p className="text-gray-400 text-sm">Portfolio Value</p>
                 <p className="text-2xl font-bold text-green-400">
-                  {formatPrice(portfolioValue, "UNT")}
+                  {formatNumber(portfolioValue)} {"UNT"}
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-400" />
@@ -593,18 +675,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             ) : errorTransactions ? (
               <div className="text-center py-16 text-red-500">
                 <p>Error: {errorTransactions}</p>
-                <p>Failed to load transaction history. Please try again later.</p>
+                <p>
+                  Failed to load transaction history. Please try again later.
+                </p>
               </div>
             ) : transactions.length > 0 && ownedVehicles.length > 0 ? (
               <div className="divide-y divide-gray-700">
                 {transactions.map((transaction) => {
-                  let vehicleModel = 'N/A';
+                  let vehicleModel = "N/A";
                   if (transaction.listing && transaction.listing.vehicle) {
                     vehicleModel = transaction.listing.vehicle.model;
                   } else if (transaction.vehicle) {
                     vehicleModel = transaction.vehicle.model;
                   } else if (transaction.vehicleId) {
-                    const ownedVehicle = ownedVehicles.find(v => v.id === transaction.vehicleId);
+                    const ownedVehicle = ownedVehicles.find(
+                      (v) => v.id === transaction.vehicleId
+                    );
                     if (ownedVehicle) {
                       vehicleModel = ownedVehicle.name;
                     }
@@ -628,7 +714,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                           >
                             {transaction.buyer?._id === userData._id ? (
                               <ArrowDownCircle className="h-4 w-4" />
-                            ) : transaction.seller?._id === userData._id && transaction.type === "sale" ? (
+                            ) : transaction.seller?._id === userData._id &&
+                              transaction.type === "sale" ? (
                               <ArrowUpCircle className="h-4 w-4" />
                             ) : (
                               <Award className="h-4 w-4" />
@@ -636,34 +723,50 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                           </div>
                           <div>
                             <p className="text-white font-semibold capitalize">
-                              {transaction.type === 'initial_purchase' ? 'Bought spawned car' :
-                               transaction.buyer?._id === userData._id ? "Bought" :
-                               transaction.seller?._id === userData._id && transaction.type === "sale" ? "Sold" :
-                               transaction.type === "cancellation" ? "Cancel Listing" : transaction.type.replace(/_/g, ' ')} - {vehicleModel}
+                              {transaction.type === "initial_purchase"
+                                ? "Bought spawned car"
+                                : transaction.buyer?._id === userData._id
+                                ? "Bought"
+                                : transaction.seller?._id === userData._id &&
+                                  transaction.type === "sale"
+                                ? "Sold"
+                                : transaction.type === "cancellation"
+                                ? "Cancel Listing"
+                                : transaction.type.replace(/_/g, " ")}{" "}
+                              - {vehicleModel}
                             </p>
                             <p className="text-gray-400 text-sm flex items-center">
                               <Clock className="h-3 w-3 mr-1" />
-                              {new Date(transaction.createdAt).toLocaleDateString()} {new Date(transaction.createdAt).toLocaleTimeString()}
+                              {new Date(
+                                transaction.createdAt
+                              ).toLocaleDateString()}{" "}
+                              {new Date(
+                                transaction.createdAt
+                              ).toLocaleTimeString()}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          {transaction.type === "initial_purchase" && transaction.buyer?._id === userData._id && (
-                            <p className="font-semibold text-red-400">
-                              -{formatPrice(transaction.amount, "UNT")}
-                            </p>
-                          )}
-                          {transaction.type === "sale" && transaction.seller?._id === userData._id && (
-                            <p className="font-semibold text-green-400">
-                              +{formatPrice(transaction.amount, "UNT")}
-                            </p>
-                          )}
-                          {transaction.type === "sale" && transaction.buyer?._id === userData._id && (
-                            <p className="font-semibold text-green-400">
-                              -{formatPrice(transaction.amount, "UNT")}
-                            </p>
-                          )}
-                          {(transaction.type === "listing" || transaction.type === "cancellation") && (
+                          {transaction.type === "initial_purchase" &&
+                            transaction.buyer?._id === userData._id && (
+                              <p className="font-semibold text-red-400">
+                                -{formatPrice(transaction.amount, "UNT")}
+                              </p>
+                            )}
+                          {transaction.type === "sale" &&
+                            transaction.seller?._id === userData._id && (
+                              <p className="font-semibold text-green-400">
+                                +{formatPrice(transaction.amount, "UNT")}
+                              </p>
+                            )}
+                          {transaction.type === "sale" &&
+                            transaction.buyer?._id === userData._id && (
+                              <p className="font-semibold text-green-400">
+                                -{formatPrice(transaction.amount, "UNT")}
+                              </p>
+                            )}
+                          {(transaction.type === "listing" ||
+                            transaction.type === "cancellation") && (
                             <p className="font-semibold text-gray-400"></p>
                           )}
                         </div>

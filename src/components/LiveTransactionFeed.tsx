@@ -14,9 +14,9 @@ import {
   TrendingDown,
   ArrowRightLeft
 } from 'lucide-react';
-import { useLiveTransactions } from '../hooks/useLiveTransactions';
+import { useLiveTransactions } from '../context/LiveTransactionsContext';
 import { LiveGameTransaction } from '../types';
-import { formatPrice, getTokenBalance, getTokenSymbol } from '../utils/web3';
+import { formatNumber, getTokenBalance, getTokenSymbol } from '../utils/web3';
 
 interface LiveTransactionFeedProps {
   user: any;
@@ -66,6 +66,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
       case 'buy_request': return <TrendingUp className="h-4 w-4 text-green-400" />;
       case 'sell_offer': return <TrendingDown className="h-4 w-4 text-blue-400" />;
       case 'trade_request': return <ArrowRightLeft className="h-4 w-4 text-purple-400" />;
+      case 'vehicle_edit_request': return <AlertTriangle className="h-4 w-4 text-yellow-400" />;
     }
   };
 
@@ -82,6 +83,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
       case 'buy_request': return 'Buy Request';
       case 'sell_offer': return 'Sell Offer';
       case 'trade_request': return 'Trade Request';
+      case 'vehicle_edit_request': return 'Vehicle Modification';
     }
   };
 
@@ -209,11 +211,11 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                     <p className="text-white text-sm font-medium">{transaction.asset.name}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-blue-400 font-semibold">
-                        {formatPrice(transaction.requestedPrice, tokenSymbol)}
+                        {formatNumber(transaction.requestedPrice)} {tokenSymbol}
                       </span>
                       {transaction.currentPrice && transaction.currentPrice !== transaction.requestedPrice && (
                         <span className="text-xs text-gray-400">
-                          Market: {formatPrice(transaction.currentPrice, tokenSymbol)}
+                          Market: {formatNumber(transaction.currentPrice)}  {tokenSymbol}
                         </span>
                       )}
                     </div>
@@ -233,7 +235,7 @@ const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({ user, onTrans
                         className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1"
                       >
                         <CheckCircle className="h-3 w-3" />
-                        <span>{isProcessingTransaction ? 'Processing...' : 'Buy'}</span>
+                        <span>{isProcessingTransaction ? 'Processing...' : (transaction.type === 'vehicle_edit_request' ? 'Pay' : 'Buy')}</span>
                       </button>
                       <button
                         onClick={() => handleDecline(transaction)}

@@ -190,12 +190,10 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
       );
 
       if (txHash) {
-        // On-chain transaction was successful. Now, call the backend API.
         if (!inGameId) {
           alert(
             "On-chain TX succeeded, but game account is not synced. Please sync your account."
           );
-          // Still return true because the on-chain part worked.
           return true;
         }
 
@@ -203,37 +201,50 @@ const Marketplace: React.FC<MarketplaceProps> = ({ user }) => {
           const apiUrl =
             import.meta.env.VITE_APP_API_URL ||
             "https://racevault.onrender.com";
-          const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              vehicleCode: transaction.vehicleCode,
-              playerId: inGameId,
-            }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(
-              `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}`
-            );
+
+          if (transaction.type === 'vehicle_edit_request' && transaction.modification) {
+            const response = await fetch(`${apiUrl}/api/car-edit-confirm`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                modId: transaction.modification.modId,
+                vehicleCode: transaction.vehicleCode,
+              }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert(
+                `Modification successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}. Your assets will update shortly.`
+              );
+            } else {
+              alert(
+                `On-chain TX succeeded, but backend update failed: ${result.message}`
+              );
+            }
           } else {
-            alert(
-              `On-chain TX succeeded, but backend update failed: ${result.message}`
-            );
+            const response = await fetch(`${apiUrl}/api/purchase-vehicle`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                vehicleCode: transaction.vehicleCode,
+                playerId: inGameId,
+              }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert(
+                `Purchase successful! Vehicle: ${transaction.asset.name}. TxHash: ${txHash}`
+              );
+            } else {
+              alert(
+                `On-chain TX succeeded, but backend update failed: ${result.message}`
+              );
+            }
           }
         } catch (apiError) {
-          console.error("Error calling purchase-vehicle API:", apiError);
+          console.error("Error calling API:", apiError);
           alert("On-chain TX succeeded, but the final API call failed.");
         }
-
-        // Original state update can be removed if we rely on a data refresh
-        // setUser({
-        //   ...user,
-        //   ownedAssets: [
-        //     ...user.ownedAssets,
-        //     { ...transaction.asset, owner: user.address },
-        //   ],
-        // });
 
         return true;
       } else {

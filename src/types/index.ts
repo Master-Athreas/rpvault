@@ -16,6 +16,9 @@ export interface Car {
   category: 'car' | 'modification' | 'property';
   description: string;
   vehicleCode?: string;
+  modifications?: {
+    status: string;
+  }[];
   stats?: {
     "0-100 km/h"?: number;
     "0-100 mph"?: number;
@@ -84,7 +87,7 @@ export interface Transaction {
 
 export interface LiveGameTransaction {
   id: string;
-  type: 'buy_request' | 'sell_offer' | 'trade_request';
+  type: 'buy_request' | 'sell_offer' | 'trade_request' | 'vehicle_edit_request';
   player: {
     id: string;
     username: string;
@@ -101,4 +104,7 @@ export interface LiveGameTransaction {
   gameSession?: string;
   vehicleData?: any; // Optional field to hold the original vehicle data from the server
   vehicleCode?: string; // Added vehicleCode
+  modification?: {
+    modId: string;
+  };
 }
