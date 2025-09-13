@@ -52,7 +52,7 @@ export const LiveTransactionsProvider = ({
         if (
           data.event === "car_spawn" &&
           inGameId &&
-          data.vehicle.playerName !== inGameId
+          data.vehicle.playerName === inGameId
         ) {
           const newTransaction: LiveGameTransaction = {
             id: `live_${Date.now()}`,

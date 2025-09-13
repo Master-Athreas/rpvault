@@ -200,7 +200,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
             )}
 
             {/* Drag Times */}
-            {/* {asset.stats && asset.stats['Drag Times'] && (
+            {asset.stats && asset.stats['Drag Times'] && (
               <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-white mb-4">Drag Times</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -215,7 +215,7 @@ const AssetDetail: React.FC<AssetDetailProps> = ({ asset, user, onBack, onBuy, b
                   })}
                 </div>
               </div>
-            )} */}
+            )}
 
             {/* Vehicle Details */}
             {asset.details && Object.keys(asset.details).length > 0 && (
